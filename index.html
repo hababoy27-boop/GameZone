@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameZone Tournament</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #0f1115;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #171a21;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #292d36;
+    }
+
+    header h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #aeb4c0;
+    }
+
+    .container {
+      width: 92%;
+      max-width: 600px;
+      margin: 25px auto;
+    }
+
+    .card {
+      background: #191d25;
+      border: 1px solid #292e38;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin-bottom: 12px;
+    }
+
+    .info {
+      color: #b9c0cc;
+      margin-bottom: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #2678ff;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .success {
+      color: #4ade80;
+      margin-top: 12px;
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      color: #777f8c;
+      padding: 25px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🎮 GameZone</h1>
+    <p>GameZone Tournament App</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>🏆 Free Fire Tournament</h2>
+      <p class="info">Entry Fee: ₹50</p>
+      <p class="info">Prize Pool: ₹5,000</p>
+      <p class="info">Players: 48</p>
+
+      <button onclick="joinTournament('Free Fire')">
+        Join Tournament
+      </button>
+
+      <p id="msg1" class="success">
+        ✅ Tournament joined successfully!
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🎯 BGMI Tournament</h2>
+      <p class="info">Entry Fee: ₹30</p>
+      <p class="info">Prize Pool: ₹3,000</p>
+      <p class="info">Players: 32</p>
+
+      <button onclick="joinTournament('BGMI')">
+        Join Tournament
+      </button>
+
+      <p id="msg2" class="success">
+        ✅ Tournament joined successfully!
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📢 Upcoming Tournament</h2>
+      <p class="info">More tournaments coming soon.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    © 2026 GameZone
+  </footer>
+
+  <script>
+    function joinTournament(game) {
+      if (game === "Free Fire") {
+        document.getElementById("msg1").style.display = "block";
+      }
+
+      if (game === "BGMI") {
+        document.getElementById("msg2").style.display = "block";
+      }
+    }
+  </script>
+
+</body>
+        </html>
