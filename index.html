@@ -1,154 +1,2873 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameZone Tournament</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Esports Tournament - Online</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    body {
-      background: #0f1115;
-      color: white;
-      min-height: 100vh;
-    }
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#080b16;color:#fff;min-height:100vh;padding-bottom:30px}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.header{background:#101528;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #252b45;position:sticky;top:0;z-index:20}
+.logo{font-size:18px;font-weight:bold;cursor:pointer;user-select:none}.logo span{color:#9333ea}
 
-    header {
-      background: #171a21;
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid #292d36;
-    }
+/* THREE-DOT MENU STYLES */
+.menu-container{position:relative;display:inline-block}
+.menu-btn{background:#1e293b;border:1px solid #334155;color:#fff;padding:8px 12px;border-radius:8px;font-size:16px;font-weight:bold}
+.menu-dropdown{display:none;position:absolute;right:0;top:40px;background:#111629;min-width:160px;box-shadow:0px 8px 16px rgba(0,0,0,0.4);border-radius:10px;border:1px solid #303752;z-index:100;overflow:hidden}
+.menu-dropdown button{width:100%;text-align:left;background:none;border:none;color:#fff;padding:12px;font-size:13px;border-bottom:1px solid #1e293b}
+.menu-dropdown button:hover{background:#9333ea}
+.menu-dropdown.show{display:block}
 
-    header h1 {
-      font-size: 30px;
-      margin-bottom: 8px;
-    }
+#notifyBanner{
+  position:fixed;top:15px;left:5%;right:5%;background:linear-gradient(135deg,#9333ea,#4f46e5);
+  color:#fff;padding:14px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.7);
+  display:none;align-items:center;justify-content:space-between;z-index:9999;font-size:14px;border:1px solid #c084fc;
+}
 
-    header p {
-      color: #aeb4c0;
-    }
+#login,#adminLogin{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.login-box{width:100%;max-width:400px;background:#111629;padding:26px;border-radius:20px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.game-logo{font-size:50px;margin-bottom:10px}
+.login-box h1{margin-bottom:6px;font-size:24px}
+.login-box p{color:#9299b8;margin:6px 0 16px;font-size:13px}
+input,select,textarea{width:100%;padding:12px;margin:7px 0;background:#080b16;color:#fff;border:1px solid #303752;border-radius:10px;outline:none;font-size:14px}
+input:focus,select:focus,textarea:focus{border-color:#9333ea}
+.btn{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-size:14px;font-weight:bold}
 
-    .container {
-      width: 92%;
-      max-width: 600px;
-      margin: 25px auto;
-    }
+.container{max-width:1000px;margin:auto;padding:16px 14px 40px}
 
-    .card {
-      background: #191d25;
-      border: 1px solid #292e38;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
+.points-wallet{background:linear-gradient(135deg,#1e1b4b,#31104b);border:1px solid #7e22ce;padding:16px;border-radius:16px;margin-bottom:16px}
+.profile-wallet-row{display:flex;align-items:center;gap:14px}
+.wallet-avatar-box{width:60px;height:60px;border-radius:50%;overflow:hidden;border:2px solid #c084fc;background:#080b16;flex-shrink:0}
+.wallet-avatar-img{width:100%;height:100%;object-fit:cover}
+.wallet-info-col{flex:1}
+.wallet-info-col h3{font-size:15px;color:#fff}
+.wallet-info-col p{font-size:11px;color:#cbd5e1;margin-top:2px}
+.wallet-balance-box{margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;display:flex;justify-content:space-between;align-items:center}
+.wallet-balance-box h1{color:#4ade80;font-size:22px;margin-top:2px}
 
-    .card h2 {
-      margin-bottom: 12px;
-    }
+.rule-notice{
+  background:rgba(234,179,8,0.12);border:1px dashed #eab308;color:#fde047;
+  padding:12px;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:14px;
+}
 
-    .info {
-      color: #b9c0cc;
-      margin-bottom: 8px;
-    }
+.filter-container{margin-bottom:14px}
+.filter-title{font-size:12px;color:#94a3b8;margin-bottom:6px;font-weight:bold}
+.cat-btn-group{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.cat-btn{
+  flex:1;min-width:100px;padding:8px 10px;border-radius:10px;border:1px solid #334155;
+  background:#111629;color:#cbd5e1;font-weight:bold;font-size:12px;text-align:center;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.cat-btn.active-cat{background:#9333ea;border-color:#a855f7;color:#fff}
 
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #2678ff;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-    }
+.mode-btn-group{display:flex;gap:8px;margin-top:6px}
+.mode-btn{
+  flex:1;padding:8px;border-radius:8px;border:1px solid #334155;
+  background:#0f172a;color:#94a3b8;font-weight:bold;font-size:11px;text-align:center;
+}
+.mode-btn.active-mode{background:#2563eb;border-color:#60a5fa;color:#fff}
 
-    button:active {
-      transform: scale(0.98);
-    }
+.vs-btn-group{display:flex;gap:6px;overflow-x:auto;margin-top:6px;padding-bottom:4px}
+.vs-btn{
+  background:#0f172a;color:#94a3b8;padding:6px 12px;border-radius:8px;border:1px solid #334155;
+  font-size:11px;font-weight:bold;cursor:pointer;white-space:nowrap;user-select:none;
+}
+.vs-btn.active-vs{
+  background:#059669;color:#fff;border-color:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.4);
+}
 
-    .success {
-      color: #4ade80;
-      margin-top: 12px;
-      display: none;
-    }
+.stats,.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat,.admin-stat{background:#111629;padding:14px 6px;border-radius:12px;text-align:center;border:1px solid #252b45}
+.stat h2,.admin-stat h2{color:#a855f7;font-size:18px}
+.stat p,.admin-stat p{color:#8e95b1;font-size:11px;margin-top:4px}
 
-    footer {
-      text-align: center;
-      color: #777f8c;
-      padding: 25px;
-    }
-  </style>
+.tournament-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px}
+.tournament-card{background:#111629;border:1px solid #252b45;border-radius:16px;padding:16px;position:relative}
+
+.game-card-emoji{
+  font-size:32px;background:#080b16;width:44px;height:44px;display:flex;
+  align-items:center;justify-content:center;border-radius:10px;border:1px solid #3b4261;
+}
+
+.status{display:inline-block;padding:4px 8px;border-radius:16px;font-size:11px;margin:8px 0;font-weight:bold}
+.open{background:#14532d;color:#4ade80}.closed{background:#7f1d1d;color:#f87171}
+.info{color:#cbd5e1;line-height:1.7;font-size:13px}
+
+.badge-mode{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:bold;margin-left:4px}
+.badge-cs{background:#9333ea;color:#fff}.badge-br{background:#2563eb;color:#fff}
+.badge-vs{background:#059669;color:#fff;border:1px solid #34d399}
+.badge-host{background:#d97706;color:#fff;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:bold}
+
+.match-rules-box{
+  background:#080b16;border:1px solid #3b4261;border-radius:10px;padding:10px;margin:10px 0;font-size:12px;
+}
+.rule-tag{
+  display:inline-block;background:#1e293b;color:#38bdf8;padding:3px 8px;border-radius:6px;margin:2px 3px;font-size:11px;font-weight:bold;border:1px solid #334155;
+}
+.gun-tag{
+  display:inline-block;background:#14532d;color:#86efac;padding:3px 7px;border-radius:6px;margin:2px 2px;font-size:10px;font-weight:bold;border:1px solid #22c55e;
+}
+
+.gun-pill-container{
+  display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;background:#0d1326;padding:10px;border-radius:10px;border:1px solid #252b45;max-height:180px;overflow-y:auto;
+}
+.gun-pill{
+  background:#1e293b;color:#cbd5e1;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;border:1px solid #334155;user-select:none;transition:0.2s;
+}
+.gun-pill.selected{
+  background:#16a34a;color:#fff;border-color:#4ade80;box-shadow:0 0 10px rgba(74,222,128,0.6);
+}
+
+.leaderboard,.register-box,.history-box,.admin-panel,.add-box{background:#111629;border-radius:16px;padding:18px;border:1px solid #252b45;margin-bottom:16px}
+.player{display:flex;align-items:center;padding:12px 4px;border-bottom:1px solid #252b45}
+.player:last-child{border-bottom:none}
+.player-info{flex:1;text-align:left;margin-left:10px}
+.points{color:#4ade80;font-weight:bold;font-size:15px}
+
+.registration-card,.history-item,.admin-player{background:#080b16;border:1px solid #252b45;padding:14px;border-radius:12px;margin-bottom:12px}
+.pending{color:#eab308;font-weight:bold}.approved{color:#4ade80;font-weight:bold}.rejected{color:#ef4444;font-weight:bold}
+
+.add-btn,.deduct-btn,.del-btn,.warn-btn,.ban-btn{border:none;padding:8px 12px;border-radius:8px;margin-top:8px;font-size:12px;font-weight:bold}
+.add-btn{background:#16a34a;color:#fff}.deduct-btn{background:#dc3545;color:#fff}
+.del-btn{background:#475569;color:#fff;margin-left:6px}
+.warn-btn{background:#d97706;color:#fff;margin-left:6px}
+.ban-btn{background:#b91c1c;color:#fff;margin-left:6px}
+
+.clear-hist-btn{
+  background:#1e293b;border:1px solid #475569;color:#f87171;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;
+}
+.clear-hist-btn:hover{background:#b91c1c;color:#fff}
+
+.accordion-header{
+  background:#1e293b;color:#38bdf8;padding:14px 16px;border-radius:12px;font-size:15px;font-weight:bold;
+  cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;border:1px solid #334155;
+  margin-bottom:12px;
+}
+.accordion-header:hover{background:#334155}
+.accordion-content{display:none;padding-top:6px}
+.accordion-content.open-acc{display:block}
+
+.room-details-box{
+  background:#091e3a;border:1px dashed #38bdf8;border-radius:10px;padding:12px;margin-top:10px;
+}
+.room-details-box h4{color:#38bdf8;margin-bottom:4px;font-size:13px}
+.room-details-box p{font-size:13px;margin:2px 0}
+
+.payment-preview{
+  max-width:100%;max-height:180px;border-radius:8px;margin-top:6px;display:block;border:1px solid #334155;
+}
+.preview-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+
+.tab-btn-group{display:flex;gap:10px;margin-bottom:15px}
+.tab-btn-group button{
+  flex:1;padding:10px;border-radius:10px;border:1px solid #334155;
+  background:#111629;color:#fff;font-weight:bold;font-size:13px;
+}
+.tab-btn-group button.active-tab{background:#9333ea;border-color:#a855f7}
+
+.empty{background:#111629;padding:24px;border-radius:14px;text-align:center;color:#9299b8}
+.page{display:none}.active{display:block}
+
+.custom-modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);
+  display:none;justify-content:center;align-items:center;z-index:99999;padding:16px;
+}
+.custom-modal{
+  background:#111629;border:2px solid #16a34a;border-radius:18px;padding:20px;
+  width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.8);
+}
+.modal-title{font-size:18px;font-weight:bold;margin-bottom:6px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.modal-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:bold;font-size:13px}
+.btn-green{background:#16a34a;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.btn-gray{background:#334155;color:#fff}
+.upload-card{background:#080b16;padding:10px;border-radius:10px;border:1px solid #303752;margin-top:8px}
+
+.qr-received-card{
+  background:#091e3a;border:2px dashed #38bdf8;border-radius:14px;padding:16px;text-align:center;margin:14px 0;
+}
+.qr-img-tag{
+  width:180px;height:180px;object-fit:contain;background:#fff;padding:8px;border-radius:10px;margin:8px auto;display:block;
+}
+.download-btn{
+  background:#0284c7;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:bold;font-size:13px;margin-top:6px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+}
+</style>
 </head>
 
 <body>
 
-  <header>
-    <h1>🎮 GameZone</h1>
-    <p>GameZone Tournament App</p>
-  </header>
+<div id="notifyBanner">
+  <span id="notifyText">Notification</span>
+  <button style="background:none;border:none;color:#fff;font-size:16px" onclick="hideNotification()">✖</button>
+</div>
 
-  <div class="container">
+<!-- 1. AUTH SCREEN -->
+<div id="login">
+  <div class="login-box">
+    <div class="game-logo" onclick="secretAdminTap()" style="cursor:pointer">🎮</div>
+    <h1>Game<span style="color:#9333ea"> Esports</span></h1>
+    <p id="authSub">वास्तविक Gmail र पासवर्डबाट लगइन गर्नुहोस्</p>
 
-    <div class="card">
-      <h2>🏆 Free Fire Tournament</h2>
-      <p class="info">Entry Fee: ₹50</p>
-      <p class="info">Prize Pool: ₹5,000</p>
-      <p class="info">Players: 48</p>
-
-      <button onclick="joinTournament('Free Fire')">
-        Join Tournament
-      </button>
-
-      <p id="msg1" class="success">
-        ✅ Tournament joined successfully!
-      </p>
+    <div class="tab-btn-group" style="margin-bottom:12px">
+      <button id="tabLoginBtn" class="active-tab" onclick="toggleAuthMode('login')">LOGIN</button>
+      <button id="tabRegBtn" onclick="toggleAuthMode('register')">REGISTER (🎁 रु ५ Bonus)</button>
     </div>
 
-    <div class="card">
-      <h2>🎯 BGMI Tournament</h2>
-      <p class="info">Entry Fee: ₹30</p>
-      <p class="info">Prize Pool: ₹3,000</p>
-      <p class="info">Players: 32</p>
-
-      <button onclick="joinTournament('BGMI')">
-        Join Tournament
-      </button>
-
-      <p id="msg2" class="success">
-        ✅ Tournament joined successfully!
-      </p>
+    <input id="userEmail" type="email" placeholder="आफ्नो Real Gmail (e.g. name@gmail.com)">
+    <input id="userPassword" type="password" placeholder="Password (कम्तिमा ६ अक्षर)">
+    
+    <div id="regExtra" style="display:none">
+      <input id="userIGN" type="text" placeholder="गेम Nickname / IGN">
+      <input id="userGameUid" type="text" placeholder="Game UID (खेलाडी आईडी)">
+      <div style="background:rgba(74,222,128,0.1); border:1px dashed #4ade80; color:#4ade80; padding:8px; border-radius:8px; font-size:12px; margin-top:4px;">
+        🎁 नयाँ खेलाडीलाई दर्ता गर्दा <b>रु ५ बोनस</b> तुरुन्त मिल्नेछ!
+      </div>
     </div>
 
-    <div class="card">
-      <h2>📢 Upcoming Tournament</h2>
-      <p class="info">More tournaments coming soon.</p>
+    <button id="authActionBtn" class="btn" style="background:#9333ea" onclick="handleAuth()">🔐 LOGIN</button>
+    
+    <div id="forgotBox">
+      <button class="forgot-btn" onclick="handleForgotPassword()" style="background:none;border:none;color:#a855f7;margin-top:10px;text-decoration:underline;font-size:12px;">🔑 Password बिर्सनुभयो? (Forgot Password)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. COMPUTER (ADMIN) LOGIN -->
+<div id="adminLogin" style="display:none">
+  <div class="login-box" id="adminLoginSection">
+    <div class="game-logo">💻</div>
+    <h1>कम्प्युटर Login</h1>
+    <p>Game Esports Cloud Dashboard</p>
+    <input id="adminEmailInput" type="email" placeholder="कम्प्युटर Real Gmail" required>
+    <input id="adminPassword" type="password" placeholder="कम्प्युटर Password" required>
+    <button class="btn" style="background:#eab308;color:#111" onclick="adminLogin()">🔐 LOGIN AS कम्प्युटर</button>
+    
+    <div class="forgot-password-link" style="text-align:center; margin-top:12px;">
+      <a href="#" onclick="showAdminResetModal(event)" style="color:#a855f7; font-size:12px; text-decoration:underline;">Forgot कम्प्युटर Password?</a>
     </div>
 
+    <button class="btn" style="background:#303752; margin-top:10px;" onclick="backToLogin()">⬅ BACK</button>
   </div>
 
-  <footer>
-    © 2026 GameZone
-  </footer>
+  <div class="login-box" id="adminResetSection" style="display:none;">
+    <div class="game-logo">🔑</div>
+    <h1>Reset कम्प्युटर Password</h1>
+    <p>आफ्नो आधिकारिक (Real) कम्प्युटर जिमेल लेख्नुहोस्</p>
+    <input id="adminResetEmailInput" type="email" placeholder="कम्प्युटर Real Gmail" required>
+    <button class="btn" style="background:#eab308;color:#111" onclick="handleAdminPasswordReset()">📤 SEND RESET LINK</button>
+    <button class="btn" style="background:#303752; margin-top:10px;" onclick="hideAdminResetModal()">⬅ CANCEL</button>
+  </div>
+</div>
 
-  <script>
-    function joinTournament(game) {
-      if (game === "Free Fire") {
-        document.getElementById("msg1").style.display = "block";
-      }
+<!-- 3. USER APP -->
+<div id="app" style="display:none">
+  <div class="header">
+    <div class="logo" onclick="secretAdminTap()">🎮 Game<span> Esports</span></div>
+    
+    <!-- THREE-DOT MENU FOR NAVIGATION -->
+    <div class="menu-container">
+      <button class="menu-btn" onclick="toggleMenuDropdown(event)">⋮</button>
+      <div id="navDropdownMenu" class="menu-dropdown">
+        <button onclick="showPage('home'); closeMenu()">🏠 Home</button>
+        <button onclick="showPage('tournaments'); closeMenu()">🏆 Games</button>
+        <button onclick="showPage('profilePage'); closeMenu()">👤 Profile</button>
+        <button onclick="showPage('registrations'); closeMenu()">🏅 Join</button>
+        <button onclick="showPage('walletPage'); closeMenu()">💰 Wallet</button>
+        <button onclick="logout(); closeMenu()" style="color:#f87171">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
 
-      if (game === "BGMI") {
-        document.getElementById("msg2").style.display = "block";
-      }
+  <!-- HOME PAGE -->
+  <div id="home" class="page active">
+    <div class="container">
+      
+      <!-- 📢 BROADCAST NOTICE BOX FOR USERS -->
+      <div id="userBroadcastBox" style="display:none; background:linear-gradient(135deg,#9333ea,#c084fc); border:1px solid #e879f9; padding:14px 16px; border-radius:14px; margin-bottom:16px; box-shadow:0 4px 20px rgba(147,51,234,0.4);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4 style="color:#fff; font-size:14px; margin-bottom:4px;">📢 एडमिनको सूचना (Official Announcement)</h4>
+        </div>
+        <p id="userBroadcastText" style="color:#f3e8ff; font-size:13px; line-height:1.5; margin-top:4px;"></p>
+      </div>
+
+      <div class="points-wallet">
+        <div class="profile-wallet-row">
+          <div class="wallet-avatar-box">
+            <img id="userAvatarImg" class="wallet-avatar-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
+          </div>
+          <div class="wallet-info-col">
+            <h3 id="profileDisplayIgn">Game Player</h3>
+            <p id="profileDisplayUid">UID: N/A</p>
+            <p id="profileDisplayEmail" style="color:#c084fc">email@gmail.com</p>
+          </div>
+        </div>
+        <div class="wallet-balance-box">
+          <div>
+            <p style="color:#c084fc;font-size:12px;font-weight:bold">🪙 मेरो खाता (ONLINE BALANCE)</p>
+            <h1>रु <span id="myPoints">0</span></h1>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg, #059669, #0d9488);padding:14px;border-radius:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="font-size:15px">⚔️ आफ्नै Custom Room बनाउने?</h3>
+          <p style="font-size:12px;color:#e2e8f0;margin-top:2px">आफ्नो Room ID राख्नुहोस्, गन छान्नुहोस् र खेल सुरु गर्नुहोस्!</p>
+        </div>
+        <button class="btn" style="width:auto;padding:8px 14px;background:#fff;color:#059669;margin:0" onclick="openCreateCustomModal()">➕ CREATE ROOM</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><h2 id="tournamentCount">0</h2><p>Tournaments</p></div>
+        <div class="stat"><h2 id="playerCount">0</h2><p>Joined Games</p></div>
+        <div class="stat"><h2>🏆 #1</h2><p>Rank</p></div>
+      </div>
+
+      <div class="filter-container">
+        <div class="filter-title">🎮 गेम छान्नुहोस्:</div>
+        <div class="cat-btn-group">
+          <button class="cat-btn active-cat" onclick="setGameFilter('ALL', this)">🌐 ALL</button>
+          <button class="cat-btn" onclick="setGameFilter('Free Fire', this)">🔥 Free Fire</button>
+          <button class="cat-btn" onclick="setGameFilter('PUBG', this)">🪂 PUBG</button>
+          <button class="cat-btn" onclick="setGameFilter('Blood Strike', this)">⚡ Blood Strike</button>
+        </div>
+
+        <div class="filter-title" style="margin-top:10px">⚔️ मोड छान्नुहोस्:</div>
+        <div class="mode-btn-group">
+          <button class="mode-btn active-mode" onclick="setModeFilter('ALL', this)">सबै मोड</button>
+          <button class="mode-btn" onclick="setModeFilter('CS', this)">💥 CS (Short)</button>
+          <button class="mode-btn" onclick="setModeFilter('BR', this)">🗺️ BR (Long)</button>
+        </div>
+
+        <div class="filter-title" style="margin-top:10px">👥 म्याच प्रकार (Format):</div>
+        <div class="vs-btn-group">
+          <button class="vs-btn active-vs" onclick="setVsFilter('ALL', this)">सबै Format</button>
+          <button class="vs-btn" onclick="setVsFilter('1v1', this)">⚔️ 1v1</button>
+          <button class="vs-btn" onclick="setVsFilter('2v2', this)">⚔️ 2v2</button>
+          <button class="vs-btn" onclick="setVsFilter('4v4', this)">⚔️ 4v4</button>
+          <button class="vs-btn" onclick="setVsFilter('6v6', this)">⚔️ 6v6</button>
+        </div>
+      </div>
+
+      <h3 style="margin:20px 0 10px;">🔥 Available Tournaments (कम्प्युटर & Players)</h3>
+      <div id="homeTournamentList" class="tournament-grid"></div>
+
+      <h3 style="margin:25px 0 10px;">🏆 Global Leaderboard</h3>
+      <div id="leaderboard" class="leaderboard"></div>
+    </div>
+  </div>
+
+  <!-- TOURNAMENTS PAGE -->
+  <div id="tournaments" class="page">
+    <div class="container">
+      <h2>🏆 Tournaments List</h2>
+      
+      <div class="filter-container" style="margin-top:10px">
+        <div class="cat-btn-group">
+          <button class="cat-btn active-cat" onclick="setGameFilter('ALL', this)">🌐 ALL</button>
+          <button class="cat-btn" onclick="setGameFilter('Free Fire', this)">🔥 Free Fire</button>
+          <button class="cat-btn" onclick="setGameFilter('PUBG', this)">🪂 PUBG</button>
+          <button class="cat-btn" onclick="setGameFilter('Blood Strike', this)">⚡ Blood Strike</button>
+        </div>
+        <div class="mode-btn-group">
+          <button class="mode-btn active-mode" onclick="setModeFilter('ALL', this)">सबै मोड</button>
+          <button class="mode-btn" onclick="setModeFilter('CS', this)">💥 CS Custom</button>
+          <button class="mode-btn" onclick="setModeFilter('BR', this)">🗺️ BR Ranked</button>
+        </div>
+        <div class="vs-btn-group">
+          <button class="vs-btn active-vs" onclick="setVsFilter('ALL', this)">सबै Format</button>
+          <button class="vs-btn" onclick="setVsFilter('1v1', this)">⚔️ 1v1</button>
+          <button class="vs-btn" onclick="setVsFilter('2v2', this)">⚔️ 2v2</button>
+          <button class="vs-btn" onclick="setVsFilter('4v4', this)">⚔️ 4v4</button>
+          <button class="vs-btn" onclick="setVsFilter('6v6', this)">⚔️ 6v6</button>
+        </div>
+      </div>
+
+      <div id="tournamentList" class="tournament-grid"></div>
+    </div>
+  </div>
+
+  <!-- JOIN MODAL PAGE -->
+  <div id="join" class="page">
+    <div class="container">
+      <h2>📝 Join Tournament / Custom Match</h2>
+      <div class="register-box">
+        <h3 id="selectedGame">Tournament</h3>
+        <p id="joinInfo" style="color:#9299b8;margin:8px 0;font-size:13px;line-height:1.6"></p>
+        <div class="points-wallet">
+          <p>उपलब्ध ब्यालेन्स</p>
+          <h2>रु <span id="joinPoints">0</span></h2>
+        </div>
+        <input id="playerName" placeholder="Player In-Game Name (IGN)">
+        <input id="gameId" placeholder="Game UID / Player ID">
+        <button id="confirmButton" class="btn" style="background:#16a34a" onclick="confirmJoin()">✅ CONFIRM JOIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRATIONS PAGE -->
+  <div id="registrations" class="page">
+    <div class="container">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2>🏅 My Joined Matches</h2>
+        <button class="clear-hist-btn" onclick="clearAllPlayedMatches()">🧹 Clear All Matches</button>
+      </div>
+      <div class="rule-notice" style="background:rgba(56,189,248,0.1);border-color:#38bdf8;color:#bae6fd">
+        ℹ️ <b>नियम:</b> गेम सकिएपछि <b>CLAIM VICTORY</b> मा थिचेर २ वटा स्क्रिनसट (Booyah र Match History) अनिवार्य पठाउनुहोस्।
+      </div>
+      <div id="registrationList"></div>
+    </div>
+  </div>
+
+  <!-- MY PROFILE PAGE -->
+  <div id="profilePage" class="page">
+    <div class="container">
+      <h2>👤 मेरो प्रोफाइल (My Profile)</h2>
+      
+      <div class="profile-card-box" style="background:linear-gradient(135deg,#111629,#1e1b4b);border:2px solid #9333ea;padding:18px;border-radius:16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;">
+        <div class="profile-avatar-container" style="position:relative;width:70px;height:70px;border-radius:50%;overflow:hidden;border:2px solid #c084fc;background:#080b16;flex-shrink:0">
+          <img id="profileAvatarImg" class="profile-avatar-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="profile-info-text" style="flex:1">
+          <h3 id="profilePageIgn" style="font-size:16px;color:#fff">Game Player</h3>
+          <p id="profilePageUid" style="font-size:12px;color:#cbd5e1;margin-top:3px">UID: N/A</p>
+          <p id="profilePageEmail" style="font-size:12px;color:#c084fc;margin-top:3px">email@gmail.com</p>
+        </div>
+      </div>
+
+      <div class="register-box">
+        <h3 style="color:#a855f7;margin-bottom:10px">⚙️ प्रोफाइल अपडेट गर्नुहोस्</h3>
+        <label style="font-size:12px;color:#cbd5e1">📸 प्रोफाइल पिक्चर फेर्नुहोस्:</label>
+        <input type="file" accept="image/*" onchange="uploadProfileAvatar(event)">
+        <label style="font-size:12px;color:#cbd5e1;margin-top:6px;display:block">गेम Nickname / IGN:</label>
+        <input id="editUserIgn" type="text" placeholder="तपाईंको गेम नाम">
+        <label style="font-size:12px;color:#cbd5e1">Game UID (खेलाडी आईडी):</label>
+        <input id="editUserUid" type="text" placeholder="तपाईंको गेम UID">
+        <button class="btn" style="background:#9333ea;margin-top:12px" onclick="saveUserProfileChanges()">💾 UPDATE PROFILE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALLET PAGE -->
+  <div id="walletPage" class="page">
+    <div class="container">
+      <h2>💰 Online Wallet & Banking</h2>
+      <div class="points-wallet">
+        <p>हालको ब्यालेन्स</p>
+        <h1>रु <span id="walletPageBalance">0</span></h1>
+        <small style="color:#cbd5e1">१ क्वाइन = रु १</small>
+      </div>
+
+      <div class="tab-btn-group">
+        <button id="tabDepBtn" class="active-tab" onclick="switchWalletSubTab('deposit')">➕ Deposit (पैसा हाल्ने)</button>
+        <button id="tabWithBtn" onclick="switchWalletSubTab('withdraw')">➖ Withdraw (पैसा निकाल्ने)</button>
+      </div>
+
+      <div id="secDeposit" class="register-box">
+        <h3>📲 वालेट डिपोजिट (Deposit Steps)</h3>
+        
+        <div style="background:#080b16;padding:12px;border-radius:12px;border:1px solid #252b45;margin:10px 0">
+          <label style="font-size:12px;color:#a855f7;font-weight:bold;display:block">१. कति रुपैयाँ डिपोजिट गर्ने हो रकम लेख्नुहोस्:</label>
+          <input id="depAmount" type="number" min="10" placeholder="रकम (e.g. 50, 100, 200)">
+          <button class="btn" style="background:#0284c7" onclick="requestAdminQR()">📲 REQUEST कम्प्युटर QR (क्युआर कोड माग्नुहोस्)</button>
+        </div>
+
+        <div id="receivedQrContainer" class="qr-received-card" style="display:none">
+          <h4 style="color:#38bdf8">✅ कम्प्युटरले तपाईंलाई पठाउनुभएको पेमेन्ट QR कोड:</h4>
+          <p style="font-size:12px;color:#94a3b8;margin-top:2px">रकम: <b id="displayQrAmount" style="color:#4ade80">रु 0</b></p>
+          <img id="adminQrImageDisplay" class="qr-img-tag" src="" alt="Computer QR">
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+            <button class="download-btn" onclick="downloadAdminQR()">⬇️ DOWNLOAD QR</button>
+            <button onclick="userDeleteQrRequest()" style="background:#dc2626;color:#fff;border:none;padding:9px 12px;border-radius:8px;font-weight:bold;font-size:12px;">🗑️ DELETE QR</button>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <label style="font-size:12px;color:#a855f7;font-weight:bold;display:block">२. पेमेन्ट गरेपछि Transaction ID र Screenshot पठाउनुहोस्:</label>
+          <input id="depTxn" type="text" placeholder="Transaction ID / Remarks">
+          <input id="depProof" type="file" accept="image/*" onchange="previewDepositImage(event)">
+          <img id="imagePreview" class="payment-preview" style="display:none">
+          <button class="btn" style="background:#16a34a;margin-top:10px" onclick="submitDeposit()">📤 SUBMIT PAYMENT PROOF</button>
+        </div>
+      </div>
+
+      <div id="secWithdraw" class="register-box" style="display:none">
+        <h3>🏦 रकम निकाल्नुहोस् (Withdraw Request)</h3>
+        <div class="rule-notice" style="background:rgba(239,68,68,0.12);border-color:#ef4444;color:#fca5a5">
+          🕒 <b>विथड्रल सूचना:</b> पैसा विथड्रल गरेको <b>२ देखि ८ घण्टासम्म</b> तपाईंको वालेटमा रकम आइपुग्नेछ।
+        </div>
+        <select id="withMethod">
+          <option value="eSewa">eSewa ID (Mobile Number)</option>
+          <option value="Khalti">Khalti ID (Mobile Number)</option>
+          <option value="Bank">Bank Account (Name, A/C No, Bank Name)</option>
+        </select>
+        <input id="withAccount" type="text" placeholder="खाता नम्बर / मोबाइल नम्बर">
+        <input id="withAmount" type="number" min="50" placeholder="निकाल्ने रकम (न्यूनतम रु ५०)">
+        <button class="btn" style="background:#16a34a" onclick="submitWithdraw()">💸 REQUEST WITHDRAWAL</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px">
+        <h3>🪙 Transaction History</h3>
+        <button class="clear-hist-btn" onclick="clearWalletHistory()">🗑️ Clear Wallet History</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+<div id="createCustomModalOverlay" class="custom-modal-overlay">
+  <div class="custom-modal" style="border-color:#059669">
+    <div class="modal-title" style="color:#34d399">⚔️ Create Custom Match (आफ्नो रुम बनाउनुहोस्)</div>
+    <label style="font-size:12px;color:#cbd5e1">गेम छान्नुहोस्:</label>
+    <select id="pHostGame" onchange="onPlayerGameSelected()">
+      <option value="Free Fire">🔥 Free Fire</option>
+      <option value="PUBG">🪂 PUBG Mobile</option>
+      <option value="Blood Strike">⚡ Blood Strike</option>
+    </select>
+    <label style="font-size:12px;color:#cbd5e1">म्याच प्रकार (Format):</label>
+    <select id="pHostVs">
+      <option value="1v1">⚔️ 1v1 Solo Challenge</option>
+      <option value="2v2">⚔️ 2v2 Duo Custom</option>
+      <option value="4v4">⚔️ 4v4 Squad Clash</option>
+      <option value="6v6">⚔️ 6v6 Custom</option>
+    </select>
+    <label style="font-size:12px;color:#34d399;font-weight:bold">🔑 तपाईंको Custom Room ID:</label>
+    <input id="pHostRoomId" type="text" placeholder="Game को Room ID लेख्नुहोस्">
+    <label style="font-size:12px;color:#34d399;font-weight:bold">🔒 Room Password:</label>
+    <input id="pHostRoomPass" type="text" placeholder="Room को Password">
+    <label style="font-size:12px;color:#cbd5e1">💰 Entry Fee प्रति खेलाडी (रु) [Free को लागि 0]:</label>
+    <input id="pHostFee" type="number" min="0" placeholder="Entry Fee (e.g. 0, 5, 10)">
+    <label style="font-size:12px;color:#cbd5e1">🛡️ Gloo Wall / Ammo:</label>
+    <select id="pHostWall">
+      <option value="Unlimited Wall">Unlimited Gloo Wall</option>
+      <option value="Limited Wall">Limited Gloo Wall</option>
+      <option value="No Gloo Wall">No Gloo Wall</option>
+    </select>
+    <label style="font-size:12px;color:#cbd5e1">🎯 शट नियम (Shot Rule):</label>
+    <select id="pHostHeadshot">
+      <option value="Normal (Head + Body)">Normal (Head + Body)</option>
+      <option value="Only Headshot (One Tap)">🎯 Only Headshot</option>
+      <option value="Body Shot Allowed">💥 Body Shot Allowed</option>
+    </select>
+    <label style="font-size:12px;color:#4ade80;font-weight:bold;margin-top:10px;display:block">🔫 गनहरू छान्नुहोस्:</label>
+    <div id="playerGunPills" class="gun-pill-container"></div>
+    <div class="modal-actions">
+      <button class="btn-green" onclick="submitPlayerCustomRoom()">🚀 PUBLISH MY ROOM</button>
+      <button class="btn-gray" onclick="closeCreateCustomModal()">✖ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div id="victoryModalOverlay" class="custom-modal-overlay">
+  <div class="custom-modal" style="border-color:#16a34a">
+    <div class="modal-title" style="color:#4ade80">🏆 Claim Victory (२ वटा स्क्रिनसट पठाउनुहोस्)</div>
+    <label style="font-size:12px;color:#cbd5e1">नतिजा / स्थान (Rank):</label>
+    <select id="vicRank">
+      <option value="Booyah #1">🥇 Booyah (Rank #1)</option>
+      <option value="Rank #2">🥈 2nd Place (Rank #2)</option>
+      <option value="Rank #3">🥉 3rd Place (Rank #3)</option>
+      <option value="Top 5">🎖️ Top 5</option>
+    </select>
+    <label style="font-size:12px;color:#cbd5e1">गरेको Kills संख्या:</label>
+    <input id="vicKills" type="number" min="0" placeholder="कति Kill गर्नुभयो?">
+    <div class="upload-card">
+      <label style="font-size:12px;color:#4ade80;font-weight:bold;display:block">📸 १. Booyah / Victory Screen:</label>
+      <input id="vicImage1Input" type="file" accept="image/*" onchange="previewVicImg(1, event)">
+      <img id="vicImg1Preview" class="payment-preview" style="display:none">
+    </div>
+    <div class="upload-card">
+      <label style="font-size:12px;color:#38bdf8;font-weight:bold;display:block">📊 २. Match History / Scoreboard:</label>
+      <input id="vicImage2Input" type="file" accept="image/*" onchange="previewVicImg(2, event)">
+      <img id="vicImg2Preview" class="payment-preview" style="display:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-green" onclick="submitVictoryModal()">✅ DONE / OK</button>
+      <button class="btn-gray" onclick="closeVictoryModal()">✖ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div id="reportModalOverlay" class="custom-modal-overlay">
+  <div class="custom-modal" style="border-color:#ef4444">
+    <div class="modal-title" style="color:#ef4444">⚠️ Report Cheater / Hacker</div>
+    <label style="font-size:12px;color:#cbd5e1">ह्याकरको IGN वा UID:</label>
+    <input id="repIGN" type="text" placeholder="ह्याक गर्ने खेलाडीको नाम">
+    <label style="font-size:12px;color:#cbd5e1">चिटिङको प्रकार:</label>
+    <select id="repReason">
+      <option value="Auto-Aim / Headshot Hack">🎯 Auto-Aim / Headshot Hack</option>
+      <option value="Wall Hack">🧱 Wall Hack</option>
+      <option value="Illegal Teaming">🤝 Illegal Teaming</option>
+    </select>
+    <div class="upload-card">
+      <label style="font-size:12px;color:#ef4444;font-weight:bold;display:block">प्रमाणको फोटो:</label>
+      <input id="repImageInput" type="file" accept="image/*" onchange="previewReportModalImage(event)">
+      <img id="repImagePreview" class="payment-preview" style="display:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-red" onclick="submitReportModal()">🚨 SUBMIT REPORT</button>
+      <button class="btn-gray" onclick="closeReportModal()">✖ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 4. COMPUTER (ADMIN) DASHBOARD ================= -->
+<div id="adminDashboard" style="display:none">
+  <div class="header">
+    <div class="logo">💻 Game<span> कम्प्युटर Control Panel</span></div>
+    <button class="logout-btn" onclick="adminLogout()" style="background:#dc2626;border:none;color:#fff;padding:6px 12px;border-radius:6px;font-weight:bold;">Logout</button>
+  </div>
+
+  <div class="container">
+    <h2>📊 Online Cloud Control Panel</h2>
+
+    <div class="admin-stats">
+      <div class="admin-stat"><h2 id="adminTournamentCount">0</h2><p>Games</p></div>
+      <div class="admin-stat"><h2 id="adminTotalRegisteredPlayers" style="color:#38bdf8">0</h2><p>Total Players</p></div>
+      <div class="admin-stat"><h2 id="adminVictoriesCount" style="color:#4ade80">0</h2><p>Victory Claims</p></div>
+      <div class="admin-stat"><h2 id="adminPendingCount">0</h2><p>Pending Dep</p></div>
+    </div>
+
+    <!-- 📢 ADMIN BROADCAST MESSAGE PANEL -->
+    <div class="add-box" style="border:1px solid #9333ea; margin-bottom:16px;">
+      <h3 style="color:#c084fc">📢 Send Broadcast Announcement to All Users (सबै युजरलाई सूचना पठाउने)</h3>
+      <textarea id="adminBroadcastInput" rows="3" placeholder="सबै युजरहरूको होमपेजमा देखाउने महत्त्वपूर्ण सूचना वा मेसेज यहाँ लेख्नुहोस्..." style="margin-top:8px;"></textarea>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="btn" style="background:#9333ea; flex:1;" onclick="sendBroadcastMessage()">🚀 PUBLISH BROADCAST</button>
+        <button class="btn" style="background:#dc2626; flex:1;" onclick="clearBroadcastMessage()">🗑️ CLEAR / HIDE NOTICE</button>
+      </div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accQrReq')">
+      <span>🔔 Live Player QR Requests (<span id="qrReqBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accQrReq" class="accordion-content admin-panel">
+      <div id="adminQrRequestsList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accVictories')">
+      <span>🏆 Victory Claims (<span id="vicBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accVictories" class="accordion-content admin-panel">
+      <div id="adminVictoryList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accReports')">
+      <span>⚠️ Cheater Reports (<span id="repBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accReports" class="accordion-content admin-panel">
+      <div id="adminReportList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accDeposits')">
+      <span>📸 Deposit Verification (<span id="depBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accDeposits" class="accordion-content admin-panel">
+      <div id="adminDepositList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accWithdraws')">
+      <span>💸 Withdrawal Requests</span> <span>▼</span>
+    </div>
+    <div id="accWithdraws" class="accordion-content admin-panel">
+      <div id="adminWithdrawList"></div>
+    </div>
+
+    <!-- ONLINE PLAYERS -->
+    <div class="accordion-header" onclick="toggleAccordion('accOnlinePlayers')">
+      <span>🟢 Online Players List (<span id="onlinePlayerBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accOnlinePlayers" class="accordion-content admin-panel">
+      <div id="adminOnlinePlayerList"></div>
+    </div>
+
+    <!-- OFFLINE PLAYERS -->
+    <div class="accordion-header" onclick="toggleAccordion('accOfflinePlayers')">
+      <span>⚪ Offline Players List (<span id="offlinePlayerBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accOfflinePlayers" class="accordion-content admin-panel">
+      <div id="adminOfflinePlayerList"></div>
+    </div>
+
+    <!-- HIDDEN / RECOVER SECTION -->
+    <div class="accordion-header" onclick="toggleAccordion('accArchivedPlayers')">
+      <span>📁 Hidden / Removed Players (<span id="archivedPlayerBadge">0</span>)</span> <span>▼</span>
+    </div>
+    <div id="accArchivedPlayers" class="accordion-content admin-panel">
+      <div style="margin-bottom:12px">
+        <button class="add-btn" style="background:#0284c7" onclick="recoverAllPlayers()">♻️ RECOVER ALL PLAYERS (सबै फिर्ता ल्याउने)</button>
+      </div>
+      <div id="adminArchivedPlayerList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accBanned')">
+      <span>🚫 Banned Players</span> <span>▼</span>
+    </div>
+    <div id="accBanned" class="accordion-content admin-panel">
+      <div id="adminBannedList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accCsTourn')">
+      <span>🎮 CS Tournaments</span> <span>▼</span>
+    </div>
+    <div id="accCsTourn" class="accordion-content admin-panel">
+      <div id="adminCsTournamentList"></div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion('accBrTourn')">
+      <span>🗺️ BR Tournaments</span> <span>▼</span>
+    </div>
+    <div id="accBrTourn" class="accordion-content admin-panel">
+      <div id="adminBrTournamentList"></div>
+    </div>
+
+    <div class="add-box" style="border:1px solid #eab308;margin-top:20px">
+      <h3 style="color:#eab308">🔐 Change कम्प्युटर Password</h3>
+      <input id="newAdminPasswordInput" type="password" placeholder="नयाँ कम्प्युटर Password">
+      <button class="btn" style="background:#eab308;color:#111" onclick="changeAdminPassword()">💾 UPDATE कम्प्युटर PASSWORD</button>
+    </div>
+
+    <div class="add-box" style="margin-top:20px;border:1px solid #38bdf8">
+      <h3 style="color:#38bdf8">➕ Add Official Tournament (कम्प्युटर Hosted)</h3>
+      <label style="font-size:12px;color:#cbd5e1">१. कुन खेल हो?:</label>
+      <select id="newGameSelect" onchange="onAdminGameSelected()">
+        <option value="Free Fire">🔥 Free Fire</option>
+        <option value="PUBG">🪂 PUBG Mobile</option>
+        <option value="Blood Strike">⚡ Blood Strike</option>
+      </select>
+      <label style="font-size:12px;color:#cbd5e1">२. कुन मोड हो?:</label>
+      <select id="newModeSelect" onchange="onAdminModeChanged()">
+        <option value="CS">💥 CS / Clash Squad Custom (दोब्बर प्राइज नियम)</option>
+        <option value="BR">🗺️ BR / Battle Royale Ranked (खुला प्राइज)</option>
+      </select>
+      <label style="font-size:12px;color:#34d399;font-weight:bold;margin-top:6px;display:block">३. म्याच प्रकार:</label>
+      <div class="vs-btn-group" id="adminVsPills">
+        <span class="vs-btn" onclick="selectAdminVs('1v1', 2, this)">⚔️ 1v1</span>
+        <span class="vs-btn" onclick="selectAdminVs('2v2', 4, this)">⚔️ 2v2</span>
+        <span class="vs-btn active-vs" onclick="selectAdminVs('4v4', 8, this)">⚔️ 4v4</span>
+        <span class="vs-btn" onclick="selectAdminVs('6v6', 12, this)">⚔️ 6v6</span>
+        <span class="vs-btn" onclick="selectAdminVs('BR Solo', 48, this)">🗺️ Solo</span>
+        <span class="vs-btn" onclick="selectAdminVs('BR Squad', 48, this)">🗺️ Squad</span>
+      </div>
+      <input id="newGameTitle" placeholder="टुर्नामेन्ट शीर्षक">
+      <div style="background:#080b16;padding:12px;border-radius:10px;margin:8px 0;border:1px solid #252b45">
+        <h4 style="color:#38bdf8;font-size:13px;margin-bottom:8px">⚙️ Custom Match Rules:</h4>
+        <label style="font-size:12px;color:#cbd5e1">🛡️ Gloo Wall:</label>
+        <select id="newRuleWall">
+          <option value="Unlimited Wall">Unlimited Gloo Wall</option>
+          <option value="Limited Wall">Limited Gloo Wall</option>
+          <option value="No Gloo Wall">No Gloo Wall</option>
+        </select>
+        <label style="font-size:12px;color:#cbd5e1">🎯 शट नियम:</label>
+        <select id="newRuleHeadshot">
+          <option value="Normal (Head + Body)">Normal (Head + Body)</option>
+          <option value="Only Headshot (One Tap)">🎯 Only Headshot</option>
+          <option value="Body Shot Allowed">💥 Body Shot Allowed</option>
+        </select>
+        <label style="font-size:12px;color:#cbd5e1">⚡ Character Skill:</label>
+        <select id="newRuleSkill">
+          <option value="Skill YES">Skill YES</option>
+          <option value="Skill NO">Skill NO</option>
+        </select>
+        <label style="font-size:12px;color:#4ade80;font-weight:bold;margin-top:10px;display:block">🔫 गनहरू:</label>
+        <div id="adminGunPills" class="gun-pill-container"></div>
+      </div>
+      <input id="newDate" placeholder="Date (e.g. 20 September 2026)">
+      <input id="newTime" placeholder="Time (e.g. 7:00 PM)">
+      <label style="font-size:12px;color:#cbd5e1;display:block">इन्ट्री शुल्क [Free को लागि 0 लेख्नुहोस्]:</label>
+      <input id="newFee" type="number" min="0" placeholder="Entry Fee (रु) [0 भए Free Entry]" oninput="handleAdminFeeInput()">
+      <label style="font-size:12px;color:#cbd5e1;display:block">प्राइज पूल (रु):</label>
+      <input id="newPrize" type="number" min="0" placeholder="Prize Pool (रु)">
+      <input id="newSlots" type="number" min="1" placeholder="Total Slots">
+      <button class="btn" style="background:#16a34a" onclick="addTournament()">➕ PUBLISH TOURNAMENT</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCrz1-qMn3XuIwb-sEvxvnY9-cdlwjMhT0",
+  authDomain: "game-esports-aeb81.firebaseapp.com",
+  databaseURL: "https://game-esports-aeb81-default-rtdb.firebaseio.com",
+  projectId: "game-esports-aeb81",
+  storageBucket: "game-esports-aeb81.firebasestorage.app",
+  messagingSenderId: "574308757459",
+  appId: "1:574308757459:web:31828c73f519a037570926",
+  measurementId: "G-RN7QNPSHRK"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((error) => {
+  console.log("Persistence error: ", error);
+});
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+const GAME_EMOJIS = {
+  "Free Fire": "🔥",
+  "PUBG": "🪂",
+  "Blood Strike": "⚡"
+};
+
+const GAME_GUN_COLLECTION = {
+  "Free Fire": [
+    "ALL GUNS", "Desert Eagle", "M1887 (Shotgun)", "M1014", "Woodpecker", "AWM", "MP40", "UMP", 
+    "M4A1", "AK47", "Scar", "Groza", "Thompson", "MAC10", "SVD", "AC80", "Charge Buster", "Fist Only"
+  ],
+  "PUBG": [
+    "ALL GUNS", "M416", "AKM", "Beryl M762", "AWM", "Kar98k", "M24", "DP-28", "UMP45", "Vector", "Pan Only"
+  ],
+  "Blood Strike": [
+    "ALL GUNS", "KAG-6", "AK-47", "M4A1", "Vector", "MP5", "Origin-12", "Kala", "AWM", "Barrett", "Melee Only"
+  ]
+};
+
+let currentUid = "";
+let currentEmail = "";
+let authMode = "login";
+let selectedTournament = null;
+let currentDepositImageBase64 = "";
+let currentAdminPass = "admin123";
+let currentAdminEmail = "nirmalsaud140@gmail.com";
+
+let adminTapCount = 0;
+let adminTapTimer = null;
+
+function secretAdminTap(){
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => {
+    adminTapCount = 0;
+  }, 1000);
+
+  if(adminTapCount >= 5){
+    adminTapCount = 0;
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "none";
+    document.getElementById("adminLogin").style.display = "flex";
+    document.getElementById("adminLoginSection").style.display = "block";
+    document.getElementById("adminResetSection").style.display = "none";
+  }
+}
+
+function toggleMenuDropdown(e){
+  e.stopPropagation();
+  const dropdown = document.getElementById("navDropdownMenu");
+  dropdown.classList.toggle("show");
+}
+
+function closeMenu(){
+  const dropdown = document.getElementById("navDropdownMenu");
+  if(dropdown) dropdown.classList.remove("show");
+}
+
+window.onclick = function(event) {
+  if (!event.target.matches('.menu-btn')) {
+    closeMenu();
+  }
+};
+
+let selectedGameCategory = "ALL";
+let selectedGameMode = "ALL";
+let selectedVsFormat = "ALL";
+
+let adminSelectedVsFormat = "4v4";
+let currentlySelectedGuns = [];
+let playerSelectedGuns = [];
+
+let activeModalTournamentId = "";
+let activeModalTournamentName = "";
+let modalVicImg1 = "";
+let modalVicImg2 = "";
+let modalReportImg = "";
+
+let onlineTournaments = [];
+let onlineUsers = {};
+let onlineRegistrations = {};
+let onlineDeposits = [];
+let onlineWithdrawals = [];
+let onlineHistory = [];
+let onlineVictories = [];
+let onlineReports = [];
+let onlineQrRequests = [];
+let lastKnownPoints = null;
+
+function playBeepSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.4);
+  } catch (e) {
+    console.log("Audio play error");
+  }
+}
+
+function toggleAccordion(id){
+  const content = document.getElementById(id);
+  if(content.classList.contains("open-acc")){
+    content.classList.remove("open-acc");
+  } else {
+    content.classList.add("open-acc");
+  }
+}
+
+db.ref("adminSettings/password").on("value", snap => {
+  const p = snap.val();
+  if(p) currentAdminPass = p;
+});
+
+db.ref("adminSettings/email").on("value", snap => {
+  const e = snap.val();
+  if(e) currentAdminEmail = e;
+});
+
+function triggerNotification(title, msg){
+  playBeepSound();
+  const banner = document.getElementById("notifyBanner");
+  document.getElementById("notifyText").innerHTML = `<b>${title}</b>: ${msg}`;
+  banner.style.display = "flex";
+
+  if("Notification" in window && Notification.permission === "granted"){
+    new Notification(title, { body: msg, icon: "🎮" });
+  }
+
+  setTimeout(()=>{ banner.style.display = "none"; }, 6000);
+}
+
+function hideNotification(){
+  document.getElementById("notifyBanner").style.display = "none";
+}
+
+if("Notification" in window && Notification.permission !== "granted"){
+  Notification.requestPermission();
+}
+
+function toggleAuthMode(mode){
+  authMode = mode;
+  if(mode === "register"){
+    document.getElementById("tabRegBtn").classList.add("active-tab");
+    document.getElementById("tabLoginBtn").classList.remove("active-tab");
+    document.getElementById("regExtra").style.display = "block";
+    document.getElementById("forgotBox").style.display = "none";
+    document.getElementById("authActionBtn").innerText = "📝 REGISTER & CLAIM रु ५ BONUS";
+  } else {
+    document.getElementById("tabLoginBtn").classList.add("active-tab");
+    document.getElementById("tabRegBtn").classList.remove("active-tab");
+    document.getElementById("regExtra").style.display = "none";
+    document.getElementById("forgotBox").style.display = "block";
+    document.getElementById("authActionBtn").innerText = "🔐 LOGIN";
+  }
+}
+
+function handleAuth(){
+  const email = document.getElementById("userEmail").value.trim();
+  const pass = document.getElementById("userPassword").value.trim();
+  const ign = document.getElementById("userIGN").value.trim();
+  const gameUid = document.getElementById("userGameUid").value.trim();
+
+  if(!email || !email.includes("@") || !email.includes(".")){
+    alert("❌ कृपया आफ्नो सक्कली Gmail ठेगाना लेख्नुहोस्!");
+    return;
+  }
+  if(pass.length < 6){
+    alert("❌ पासवर्ड कम्तिमा ६ अक्षर वा अङ्कको हुनुपर्छ!");
+    return;
+  }
+
+  const btn = document.getElementById("authActionBtn");
+  btn.disabled = true;
+  btn.innerText = "⏳ पर्खनुहोस्...";
+
+  if(authMode === "register"){
+    if(!ign || !gameUid){
+      alert("कृपया आफ्नो Nickname (IGN) र Game UID दुवै लेख्नुहोस्!");
+      btn.disabled = false;
+      btn.innerText = "📝 REGISTER & CLAIM रु ५ BONUS";
+      return;
     }
-  </script>
 
+    // नयाँ दर्ता हुँदा स्वतः रु ५ बोनस दिने
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(cred => {
+        const welcomeBonus = 5;
+        const initialHist = [{
+          amount: welcomeBonus,
+          reason: "🎉 Welcome Registration Bonus",
+          date: new Date().toLocaleString()
+        }];
+        db.ref("history/" + cred.user.uid).set(initialHist);
+
+        return db.ref("users/" + cred.user.uid).set({
+          uid: cred.user.uid,
+          email: email,
+          ign: ign,
+          gameUid: gameUid,
+          avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+          points: welcomeBonus, // रु ५ बोनस ब्यालेन्स
+          status: "active",
+          lastActive: new Date().toLocaleString()
+        });
+      })
+      .then(()=>{
+        btn.disabled = false;
+        btn.innerText = "🔐 LOGIN";
+        alert("🎉 दर्ता सफल भयो!\n🎁 तपाईंको खातामा रु ५ दर्ता बोनस (Welcome Bonus) थपिएको छ!");
+        openApp();
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "📝 REGISTER & CLAIM रु ५ BONUS";
+        alert("❌ दर्ता असफल: " + err.message);
+      });
+
+  } else {
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(cred => {
+        btn.disabled = false;
+        btn.innerText = "🔐 LOGIN";
+        
+        db.ref("users/" + cred.user.uid).once("value", snap => {
+          const u = snap.val();
+          if(u && u.status === "banned"){
+            auth.signOut();
+            alert("🚫 तपाईंको अकाउन्ट ब्यान गरिएको छ!");
+          } else {
+            db.ref("users/" + cred.user.uid).update({
+              status: "active",
+              lastActive: new Date().toLocaleString()
+            });
+            openApp();
+          }
+        });
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "🔐 LOGIN";
+        alert("❌ लगइन असफल: " + err.message);
+      });
+  }
+}
+
+function handleForgotPassword(){
+  const email = prompt("आफ्नो दर्ता गरिएको Gmail ठेगाना लेख्नुहोस्:");
+  if(!email || !email.trim()) return;
+
+  auth.sendPasswordResetEmail(email.trim())
+    .then(()=>{
+      alert("📧 पासवर्ड रिसेट लिङ्क तपाईंको Gmail मा पठाइयो!");
+    })
+    .catch(err => {
+      alert("❌ रिसेट लिङ्क पठाउन सकिएन: " + err.message);
+    });
+}
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    db.ref("users/" + user.uid).once("value", snap => {
+      const u = snap.val();
+      if(u && u.status === "banned"){
+        auth.signOut();
+        alert("🚫 तपाईंको अकाउन्ट ब्यान गरिएको छ!");
+      } else {
+        currentUid = user.uid;
+        currentEmail = user.email;
+        db.ref("users/" + currentUid).update({
+          status: "active",
+          lastActive: new Date().toLocaleString()
+        });
+
+        listenToUserData(currentUid);
+        openApp();
+      }
+    });
+  } else {
+    currentUid = "";
+    currentEmail = "";
+    lastKnownPoints = null;
+    document.getElementById("app").style.display = "none";
+    document.getElementById("adminLogin").style.display = "none";
+    document.getElementById("login").style.display = "flex";
+  }
+});
+
+function listenToUserData(uid){
+  db.ref("users/" + uid + "/status").on("value", snap => {
+    if(snap.val() === "banned"){
+      alert("🚫 तपाईंको अकाउन्ट कम्प्युटर द्वारा ब्यान गरियो!");
+      logout();
+    }
+  });
+
+  db.ref("users/" + uid).on("value", snap => {
+    const data = snap.val();
+    if(data){
+      const pts = Number(data.points || 0);
+      if(lastKnownPoints !== null && lastKnownPoints !== pts){
+        const diff = pts - lastKnownPoints;
+        if(diff > 0){
+          triggerNotification("💰 Balance Added!", `तपाईंको खातामा रु ${diff} थपिएको छ। हालको ब्यालेन्स: रु ${pts}`);
+        } else if(diff < 0){
+          triggerNotification("📉 Balance Deducted!", `तपाईंको खाताबाट रु ${Math.abs(diff)} काटिएको छ।`);
+        }
+      }
+      lastKnownPoints = pts;
+      document.getElementById("myPoints").innerText = pts;
+      document.getElementById("walletPageBalance").innerText = pts;
+      document.getElementById("joinPoints").innerText = pts;
+
+      document.getElementById("profileDisplayIgn").innerText = data.ign || "No IGN set";
+      document.getElementById("profileDisplayUid").innerText = "UID: " + (data.gameUid || "N/A");
+      document.getElementById("profileDisplayEmail").innerText = data.email || currentEmail;
+
+      document.getElementById("profilePageIgn").innerText = data.ign || "No IGN set";
+      document.getElementById("profilePageUid").innerText = "UID: " + (data.gameUid || "N/A");
+      document.getElementById("profilePageEmail").innerText = data.email || currentEmail;
+
+      if(data.avatar){
+        document.getElementById("userAvatarImg").src = data.avatar;
+        document.getElementById("profileAvatarImg").src = data.avatar;
+      }
+      document.getElementById("editUserIgn").value = data.ign || "";
+      document.getElementById("editUserUid").value = data.gameUid || "";
+    }
+  });
+
+  db.ref("qrRequests/" + uid).on("value", snap => {
+    const req = snap.val();
+    const qrContainer = document.getElementById("receivedQrContainer");
+
+    if(req && req.status === "Sent" && req.qrImage){
+      qrContainer.style.display = "block";
+      document.getElementById("adminQrImageDisplay").src = req.qrImage;
+      document.getElementById("displayQrAmount").innerText = `रु ${req.amount}`;
+      triggerNotification("💳 कम्प्युटर QR Code Received!", `कम्प्युटरले तपाईंलाई रु ${req.amount} को लागि पेमेन्ट QR कोड पठाउनुभयो।`);
+    } else {
+      qrContainer.style.display = "none";
+    }
+  });
+
+  db.ref("registrations/" + uid).on("value", snap => {
+    const list = snap.val() || [];
+    onlineRegistrations[uid] = list;
+    updateRegistrationList();
+    document.getElementById("playerCount").innerText = list.length;
+  });
+
+  db.ref("history/" + uid).on("value", snap => {
+    onlineHistory = snap.val() || [];
+    updateHistory();
+  });
+}
+
+function initGlobalListeners(){
+  db.ref("tournaments").on("value", snap => {
+    const data = snap.val();
+    onlineTournaments = data ? Object.values(data) : [];
+    document.getElementById("tournamentCount").innerText = onlineTournaments.length;
+    renderTournaments();
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      loadAdmin();
+    }
+  });
+
+  db.ref("users").on("value", snap => {
+    onlineUsers = snap.val() || {};
+    renderLeaderboard();
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      loadAdmin();
+    }
+  });
+
+  db.ref("qrRequests").on("value", snap => {
+    const data = snap.val();
+    onlineQrRequests = data ? Object.values(data) : [];
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      displayAdminQrRequests();
+    }
+  });
+
+  db.ref("deposits").on("value", snap => {
+    const data = snap.val();
+    onlineDeposits = data ? Object.values(data) : [];
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      displayAdminDeposits();
+    }
+  });
+
+  db.ref("withdrawals").on("value", snap => {
+    const data = snap.val();
+    onlineWithdrawals = data ? Object.values(data) : [];
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      displayAdminWithdrawals();
+    }
+  });
+
+  db.ref("victories").on("value", snap => {
+    const data = snap.val();
+    onlineVictories = data ? Object.values(data) : [];
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      displayAdminVictories();
+    }
+  });
+
+  db.ref("reports").on("value", snap => {
+    const data = snap.val();
+    onlineReports = data ? Object.values(data) : [];
+    if(document.getElementById("adminDashboard").style.display === "block"){
+      displayAdminReports();
+    }
+  });
+
+  // 📢 Broadcast Notice
+  db.ref("broadcastNotice").on("value", snap => {
+    const notice = snap.val();
+    const noticeBox = document.getElementById("userBroadcastBox");
+    const noticeText = document.getElementById("userBroadcastText");
+    if(notice && notice.text){
+      noticeText.innerText = notice.text;
+      noticeBox.style.display = "block";
+    } else {
+      noticeBox.style.display = "none";
+    }
+  });
+}
+
+initGlobalListeners();
+
+function escapeHTML(v){
+  return String(v||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+
+function openApp(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("adminLogin").style.display="none";
+  document.getElementById("adminDashboard").style.display="none";
+  document.getElementById("app").style.display="block";
+  renderTournaments();
+  renderLeaderboard();
+}
+
+function showPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const target = document.getElementById(page);
+  if(target) target.classList.add("active");
+
+  if(page==="home"){renderTournaments();renderLeaderboard()}
+  if(page==="tournaments")renderTournaments();
+  if(page==="registrations")updateRegistrationList();
+  if(page==="walletPage")updateHistory();
+}
+
+function uploadProfileAvatar(event){
+  const file = event.target.files[0];
+  if(!file || !currentUid) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const base64Img = e.target.result;
+    db.ref("users/" + currentUid + "/avatar").set(base64Img).then(()=>{
+      alert("✅ प्रोफाइल पिक्चर सफलतापूर्वक अपडेट भयो!");
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserProfileChanges(){
+  const ign = document.getElementById("editUserIgn").value.trim();
+  const gameUid = document.getElementById("editUserUid").value.trim();
+
+  if(!ign || !gameUid){
+    alert("कृपया IGN र UID दुवै लेख्नुहोस्!");
+    return;
+  }
+
+  db.ref("users/" + currentUid).update({
+    ign: ign,
+    gameUid: gameUid
+  }).then(()=>{
+    alert("💾 प्रोफाइल विवरण सफलतापूर्वक सेभ भयो!");
+  });
+}
+
+function switchWalletSubTab(tab){
+  if(tab === "deposit"){
+    document.getElementById("secDeposit").style.display = "block";
+    document.getElementById("secWithdraw").style.display = "none";
+    document.getElementById("tabDepBtn").classList.add("active-tab");
+    document.getElementById("tabWithBtn").classList.remove("active-tab");
+  } else {
+    document.getElementById("secDeposit").style.display = "none";
+    document.getElementById("secWithdraw").style.display = "block";
+    document.getElementById("tabDepBtn").classList.remove("active-tab");
+    document.getElementById("tabWithBtn").classList.add("active-tab");
+  }
+}
+
+function setGameFilter(gameCat, btn){
+  selectedGameCategory = gameCat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active-cat"));
+  if(btn) btn.classList.add("active-cat");
+  renderTournaments();
+}
+
+function setModeFilter(mode, btn){
+  selectedGameMode = mode;
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active-mode"));
+  if(btn) btn.classList.add("active-mode");
+  renderTournaments();
+}
+
+function setVsFilter(vsFormat, btn){
+  selectedVsFormat = vsFormat;
+  document.querySelectorAll(".vs-btn").forEach(b => b.classList.remove("active-vs"));
+  if(btn) btn.classList.add("active-vs");
+  renderTournaments();
+}
+
+function renderTournaments(){
+  const list = document.getElementById("tournamentList");
+  const home = document.getElementById("homeTournamentList");
+  if(!list || !home) return;
+  list.innerHTML = ""; home.innerHTML = "";
+
+  const filtered = onlineTournaments.filter(t => {
+    const isModelOpen = (t.status === "Open");
+    const matchGame = (selectedGameCategory === "ALL") || (t.gameCategory === selectedGameCategory) || (t.game && t.game.includes(selectedGameCategory));
+    const matchMode = (selectedGameMode === "ALL") || (t.gameMode === selectedGameMode);
+    const matchVs = (selectedVsFormat === "ALL") || (t.vsFormat === selectedVsFormat) || (t.game && t.game.includes(selectedVsFormat));
+    return isModelOpen && matchGame && matchMode && matchVs;
+  });
+
+  if(!filtered.length){
+    list.innerHTML = home.innerHTML = `<div class="empty">यो क्याटेगोरी/फर्म्याटमा हाल कुनै खुला (Open) प्रतियोगिता उपलब्ध छैन</div>`;
+    return;
+  }
+
+  filtered.forEach(t=>{
+    const card = createTournamentCard(t);
+    list.appendChild(card);
+    home.appendChild(card.cloneNode(true));
+  });
+}
+
+function createTournamentCard(t){
+  const card = document.createElement("div");
+  card.className = "tournament-card";
+  const userJoined = currentUid && (onlineRegistrations[currentUid]||[]).some(r=>Number(r.tournamentId)===Number(t.id));
+  const isHost = currentUid && t.hostUid === currentUid;
+
+  let joinButton = "";
+  if(userJoined){
+    joinButton = `<button class="btn" style="background:#16a34a" disabled>✅ REGISTERED / HOST</button>`;
+  } else {
+    const isFree = Number(t.fee || 0) === 0;
+    const btnText = isFree ? "🎁 FREE JOIN" : `JOIN — रु ${Number(t.fee)}`;
+    const btnBg = isFree ? "linear-gradient(135deg, #10b981, #059669)" : "#2563eb";
+    joinButton = `<button class="btn" style="background:${btnBg}" onclick="joinTournament('${t.id}')">${btnText}</button>`;
+  }
+
+  let roomBox = "";
+  if(userJoined || isHost){
+    roomBox = `
+      <div class="room-details-box">
+        <h4>🔑 Custom Room Credentials</h4>
+        <p><b>Room ID:</b> ${escapeHTML(t.roomId || "कम्प्युटर/Host ले पठाउँदैछ...")}</p>
+        <p><b>Password:</b> ${escapeHTML(t.roomPass || "कम्प्युटर/Host ले पठाउँदैछ...")}</p>
+      </div>`;
+  }
+
+  const modeBadge = t.gameMode === "CS" ? `<span class="badge-mode badge-cs">💥 CS (2x Prize)</span>` : `<span class="badge-mode badge-br">🗺️ BR Ranked</span>`;
+  const vsBadge = `<span class="badge-mode badge-vs">⚔️ ${escapeHTML(t.vsFormat || 'Custom')}</span>`;
+  const hostBadge = t.hostedByPlayer ? `<span class="badge-host">👤 Player Hosted (${escapeHTML(t.hostEmail || 'User')})</span>` : `<span class="badge-host" style="background:#9333ea">👑 Official</span>`;
+
+  const gameEmoji = GAME_EMOJIS[t.gameCategory] || "🎮";
+  const allowedGunsArr = t.allowedGuns ? t.allowedGuns.split(", ") : ["ALL GUNS"];
+  let gunsBadgesHtml = allowedGunsArr.map(g => `<span class="gun-tag">🔫 ${escapeHTML(g)}</span>`).join(" ");
+
+  const rulesHtml = `
+    <div class="match-rules-box">
+      <span class="rule-tag">🛡️ ${escapeHTML(t.ruleWall || 'Unlimited Wall')}</span>
+      <span class="rule-tag">🎯 ${escapeHTML(t.ruleHeadshot || 'Normal')}</span>
+      <span class="rule-tag">⚡ ${escapeHTML(t.ruleSkill || 'Skill YES')}</span>
+      <div style="margin-top:6px;border-top:1px solid #1e293b;padding-top:4px">
+        <small style="color:#94a3b8;font-weight:bold">Allowed Guns / Rules:</small><br>
+        <div style="margin-top:2px">${gunsBadgesHtml}</div>
+      </div>
+    </div>
+  `;
+
+  const feeDisplay = Number(t.fee || 0) === 0 ? `<b style="color:#4ade80">FREE (रु ०)</b>` : `<b>रु ${Number(t.fee)}</b>`;
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="game-card-emoji">${gameEmoji}</div>
+      ${hostBadge}
+    </div>
+    <span class="status open">● OPEN</span>
+    ${modeBadge} ${vsBadge}
+    <h3 style="margin-top:6px">${escapeHTML(t.game)}</h3>
+    <div class="info">
+      🎯 Game: <b>${escapeHTML(t.gameCategory || 'General')}</b> | ⚔️ Format: <b style="color:#34d399">${escapeHTML(t.vsFormat || 'Custom')}</b><br>
+      📅 ${escapeHTML(t.date)} | ⏰ ${escapeHTML(t.time)}<br>
+      💰 Entry: ${feeDisplay} | 🏆 Prize: <b style="color:#eab308">रु ${Number(t.prize)}</b> | 👥 Slots: ${Number(t.slots)}
+    </div>
+    ${rulesHtml}
+    ${joinButton}
+    ${roomBox}
+  `;
+  return card;
+}
+
+function joinTournament(id){
+  selectedTournament = onlineTournaments.find(t=>String(t.id)===String(id));
+  if(!selectedTournament) return;
+
+  const isFree = Number(selectedTournament.fee || 0) === 0;
+  const feeDisplay = isFree ? "<b style='color:#4ade80'>FREE (रु ०)</b>" : `<b>रु ${Number(selectedTournament.fee)}</b>`;
+
+  document.getElementById("selectedGame").innerText = selectedTournament.game;
+  document.getElementById("joinInfo").innerHTML = `
+    🎯 Game: <b>${escapeHTML(selectedTournament.gameCategory || 'General')}</b> (${escapeHTML(selectedTournament.vsFormat || 'Custom')})<br>
+    🛡️ Wall: <b>${escapeHTML(selectedTournament.ruleWall || 'Unlimited')}</b> | 🎯 Shot: <b>${escapeHTML(selectedTournament.ruleHeadshot || 'Normal')}</b><br>
+    🔫 Allowed Guns: <b>${escapeHTML(selectedTournament.allowedGuns || 'ALL GUNS')}</b><br>
+    📅 ${escapeHTML(selectedTournament.date)} | ⏰ ${escapeHTML(selectedTournament.time)}<br>
+    💰 Entry: ${feeDisplay} | 🏆 Prize: <b style="color:#eab308">रु ${Number(selectedTournament.prize)}</b>
+  `;
+
+  if(onlineUsers[currentUid]){
+    document.getElementById("playerName").value = onlineUsers[currentUid].ign || "";
+    document.getElementById("gameId").value = onlineUsers[currentUid].gameUid || "";
+  }
+
+  showPage("join");
+}
+
+function confirmJoin(){
+  if(!selectedTournament || !currentUid) return;
+  const name = document.getElementById("playerName").value.trim();
+  const gameId = document.getElementById("gameId").value.trim();
+
+  if(!name || !gameId){alert("कृपया IGN र UID दुवै लेख्नुहोस्!"); return;}
+
+  const fee = Number(selectedTournament.fee || 0);
+  const currentPoints = Number((onlineUsers[currentUid] && onlineUsers[currentUid].points) || 0);
+
+  // यदि सशुल्क म्याच हो भने मात्र रकम चेक गर्ने
+  if(fee > 0 && currentPoints < fee){
+    alert("❌ तपाईंको खातामा पर्याप्त रकम (रु) छैन! पहिले Wallet बाट डिपोजिट गर्नुहोस्।");
+    showPage("walletPage");
+    return;
+  }
+
+  // सशुल्क म्याच भए मात्र ब्यालेन्स काट्ने
+  if(fee > 0){
+    db.ref("users/" + currentUid + "/points").set(currentPoints - fee);
+    addHistory(currentUid, -fee, "Joined " + selectedTournament.game);
+  } else {
+    addHistory(currentUid, 0, "Joined FREE Match: " + selectedTournament.game);
+  }
+
+  const regKey = Date.now().toString();
+  const currentRegs = onlineRegistrations[currentUid] || [];
+  currentRegs.push({
+    id: regKey,
+    tournamentId: selectedTournament.id,
+    tournament: selectedTournament.game,
+    playerName: name,
+    gameId: gameId,
+    entryFee: fee,
+    date: new Date().toLocaleString()
+  });
+
+  db.ref("registrations/" + currentUid).set(currentRegs);
+
+  db.ref("tournaments/" + selectedTournament.id + "/joinedCount").transaction(val => {
+    const nextCount = (val || 1) + 1;
+    if(nextCount >= selectedTournament.slots){
+      db.ref("tournaments/" + selectedTournament.id + "/status").set("Closed");
+    }
+    return nextCount;
+  });
+
+  alert(fee === 0 ? "🎉 दर्ता सफल भयो! (FREE ENTRY MATCH)" : `🎉 दर्ता सफल भयो!\nरु ${fee} काटियो।`);
+  showPage("registrations");
+}
+
+function openCreateCustomModal(){
+  document.getElementById("pHostRoomId").value = "";
+  document.getElementById("pHostRoomPass").value = "";
+  document.getElementById("pHostFee").value = "";
+  onPlayerGameSelected();
+  document.getElementById("createCustomModalOverlay").style.display = "flex";
+}
+
+function closeCreateCustomModal(){
+  document.getElementById("createCustomModalOverlay").style.display = "none";
+}
+
+function onPlayerGameSelected(){
+  const gameCat = document.getElementById("pHostGame").value;
+  const container = document.getElementById("playerGunPills");
+  container.innerHTML = "";
+  playerSelectedGuns = ["ALL GUNS"];
+
+  const gunList = GAME_GUN_COLLECTION[gameCat] || GAME_GUN_COLLECTION["Free Fire"];
+  gunList.forEach(gun => {
+    const pill = document.createElement("span");
+    pill.className = "gun-pill" + (gun === "ALL GUNS" ? " selected" : "");
+    pill.innerText = gun;
+    pill.onclick = () => togglePlayerGunPill(gun, pill);
+    container.appendChild(pill);
+  });
+}
+
+function togglePlayerGunPill(gun, el){
+  if(gun === "ALL GUNS"){
+    playerSelectedGuns = ["ALL GUNS"];
+    document.querySelectorAll("#playerGunPills .gun-pill").forEach(p => p.classList.remove("selected"));
+    el.classList.add("selected");
+    return;
+  }
+
+  playerSelectedGuns = playerSelectedGuns.filter(g => g !== "ALL GUNS");
+  const allGunsPill = Array.from(document.querySelectorAll("#playerGunPills .gun-pill")).find(p => p.innerText === "ALL GUNS");
+  if(allGunsPill) allGunsPill.classList.remove("selected");
+
+  if(playerSelectedGuns.includes(gun)){
+    playerSelectedGuns = playerSelectedGuns.filter(g => g !== gun);
+    el.classList.remove("selected");
+    if(!playerSelectedGuns.length && allGunsPill){
+      playerSelectedGuns = ["ALL GUNS"];
+      allGunsPill.classList.add("selected");
+    }
+  } else {
+    playerSelectedGuns.push(gun);
+    el.classList.add("selected");
+  }
+}
+
+function submitPlayerCustomRoom(){
+  const game = document.getElementById("pHostGame").value;
+  const vs = document.getElementById("pHostVs").value;
+  const roomId = document.getElementById("pHostRoomId").value.trim();
+  const roomPass = document.getElementById("pHostRoomPass").value.trim();
+  const fee = Number(document.getElementById("pHostFee").value || 0);
+  const wall = document.getElementById("pHostWall").value;
+  const headshot = document.getElementById("pHostHeadshot").value;
+
+  if(!roomId || !roomPass){
+    alert("❌ कृपया आफ्नो Room ID र Password अनिवार्य लेख्नुहोस्!");
+    return;
+  }
+
+  const userBal = Number((onlineUsers[currentUid] && onlineUsers[currentUid].points) || 0);
+  if(fee > 0 && userBal < fee){
+    alert("❌ तपाईंसँग Entry Fee बराबरको ब्यालेन्स छैन! पहिले वालेटबाट डिपोजिट गर्नुहोस्।");
+    showPage("walletPage");
+    closeCreateCustomModal();
+    return;
+  }
+
+  if(fee > 0){
+    db.ref("users/" + currentUid + "/points").set(userBal - fee);
+    addHistory(currentUid, -fee, `Hosted ${vs} Custom (${game})`);
+  } else {
+    addHistory(currentUid, 0, `Hosted FREE ${vs} Custom (${game})`);
+  }
+
+  let slots = 2;
+  if(vs === "2v2") slots = 4;
+  if(vs === "4v4") slots = 8;
+  if(vs === "6v6") slots = 12;
+
+  // CS Custom मा दोब्बर प्राइज नियम (₹५ को १०, ₹१० को २०)
+  let totalPrize = 0;
+  if(fee > 0){
+    totalPrize = fee * 2;
+  }
+
+  const gunsString = playerSelectedGuns.length ? playerSelectedGuns.join(", ") : "ALL GUNS";
+
+  const tId = Date.now().toString();
+  db.ref("tournaments/" + tId).set({
+    id: tId,
+    game: `${game} ${vs} Challenge`,
+    gameCategory: game,
+    gameMode: "CS",
+    vsFormat: vs,
+    ruleWall: wall,
+    ruleHeadshot: headshot,
+    ruleSkill: "Skill YES",
+    allowedGuns: gunsString,
+    date: "Today (Live)",
+    time: "Instant Match",
+    fee: fee,
+    prize: totalPrize,
+    slots: slots,
+    status: "Open",
+    roomId: roomId,
+    roomPass: roomPass,
+    hostedByPlayer: true,
+    hostUid: currentUid,
+    hostEmail: currentEmail,
+    joinedCount: 1
+  });
+
+  const hostRegs = onlineRegistrations[currentUid] || [];
+  hostRegs.push({
+    id: Date.now().toString(),
+    tournamentId: tId,
+    tournament: `${game} ${vs} Challenge`,
+    playerName: (onlineUsers[currentUid] && onlineUsers[currentUid].ign) || "Host",
+    gameId: roomId,
+    entryFee: fee,
+    date: new Date().toLocaleString()
+  });
+  db.ref("registrations/" + currentUid).set(hostRegs);
+
+  closeCreateCustomModal();
+  alert(`🎉 तपाईंको Custom Match प्रकाशित भयो!`);
+  showPage("registrations");
+}
+
+function requestAdminQR(){
+  const amt = Number(document.getElementById("depAmount").value);
+  if(!amt || amt <= 0){
+    alert("❌ कृपया कति रुपैयाँ डिपोजिट गर्ने हो पहिले लेख्नुहोस्!");
+    return;
+  }
+
+  db.ref("qrRequests/" + currentUid).set({
+    uid: currentUid,
+    userEmail: currentEmail,
+    amount: amt,
+    status: "Pending",
+    requestedAt: new Date().toLocaleString()
+  }).then(()=>{
+    alert(`✅ रु ${amt} को लागि कम्प्युटरसँग QR अनुरोध पठाइयो! कम्प्युटरले पठाएपछि यहाँ देखा पर्नेछ।`);
+  });
+}
+
+function userDeleteQrRequest(){
+  if(!confirm("के तपाईं यो QR कोड हटाउन (Delete गर्न) चाहनुहुन्छ?")) return;
+  db.ref("qrRequests/" + currentUid).remove().then(()=>{
+    alert("🗑️ QR अनुरोध सफलतापूर्वक हटाइयो!");
+  });
+}
+
+function downloadAdminQR(){
+  const imgElement = document.getElementById("adminQrImageDisplay");
+  if(!imgElement.src){
+    alert("डाउनलोड गर्नको लागि QR कोड उपलब्ध छैन!");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = imgElement.src;
+  a.download = "Computer_Payment_QR.png";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  alert("⬇️ QR कोड डाउनलोड भयो!");
+}
+
+function previewDepositImage(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    currentDepositImageBase64 = e.target.result;
+    const img = document.getElementById("imagePreview");
+    img.src = currentDepositImageBase64;
+    img.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitDeposit(){
+  const amt = Number(document.getElementById("depAmount").value);
+  const txn = document.getElementById("depTxn").value.trim();
+
+  if(!amt || amt <= 0){alert("कृपया रकम (रु) लेख्नुहोस्!"); return;}
+  if(!currentDepositImageBase64){alert("कृपया पेमेन्ट स्क्रिनसट अपलोड गर्नुहोस्!"); return;}
+
+  const id = Date.now().toString();
+  db.ref("deposits/" + id).set({
+    id: id,
+    uid: currentUid,
+    userEmail: currentEmail,
+    amount: amt,
+    txn: txn || "Not provided",
+    image: currentDepositImageBase64,
+    status: "Pending",
+    date: new Date().toLocaleString()
+  });
+
+  alert("✅ पेमेन्ट विवरण Server मा पठाइयो!\n⚡ कम्प्युटरले भेरिफाई गरेपछि वालेटमा रकम थपिनेछ।");
+  document.getElementById("depAmount").value = "";
+  document.getElementById("depTxn").value = "";
+  document.getElementById("depProof").value = "";
+  document.getElementById("imagePreview").style.display = "none";
+  currentDepositImageBase64 = "";
+}
+
+function submitWithdraw(){
+  const method = document.getElementById("withMethod").value;
+  const acc = document.getElementById("withAccount").value.trim();
+  const amt = Number(document.getElementById("withAmount").value);
+
+  if(!acc){alert("कृपया खाता वा मोबाइल नम्बर लेख्नुहोस्!"); return;}
+  if(!amt || amt < 50){alert("न्यूनतम विथड्रल रकम रु ५० हुनुपर्छ!"); return;}
+
+  const bal = Number((onlineUsers[currentUid] && onlineUsers[currentUid].points) || 0);
+  if(bal < amt){alert("❌ तपाईंको खातामा पर्याप्त रकम छैन!"); return;}
+
+  db.ref("users/" + currentUid + "/points").set(bal - amt);
+
+  const id = Date.now().toString();
+  db.ref("withdrawals/" + id).set({
+    id: id,
+    uid: currentUid,
+    userEmail: currentEmail,
+    method: method,
+    account: acc,
+    amount: amt,
+    status: "Pending",
+    date: new Date().toLocaleString()
+  });
+
+  addHistory(currentUid, -amt, `Withdraw Request (${method}: ${acc})`);
+  alert("✅ विथड्रल अनुरोध पठाइयो!\n🕒 २ देखि ८ घण्टाभित्र रकम आइपुग्नेछ।");
+  document.getElementById("withAccount").value = "";
+  document.getElementById("withAmount").value = "";
+}
+
+function addHistory(uid, amount, reason){
+  const hist = onlineHistory || [];
+  hist.push({ amount: Number(amount), reason, date: new Date().toLocaleString() });
+  db.ref("history/" + uid).set(hist);
+}
+
+function updateHistory(){
+  const list = document.getElementById("historyList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!onlineHistory.length){
+    list.innerHTML = `<div class="empty">कुनै कारोबार विवरण छैन</div>`; return;
+  }
+  onlineHistory.slice().reverse().forEach(h=>{
+    const div = document.createElement("div");
+    div.className = "history-item";
+    const sign = h.amount >= 0 ? "+" : "";
+    const color = h.amount >= 0 ? "#4ade80" : "#f87171";
+    div.innerHTML = `
+      <b style="color:${color};font-size:15px">${sign}रु ${Number(h.amount)}</b>
+      <p style="color:#cbd5e1;font-size:13px;margin-top:4px">${escapeHTML(h.reason)}</p>
+      <small style="color:#64748b">${escapeHTML(h.date)}</small>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function clearWalletHistory(){
+  if(!onlineHistory.length){
+    alert("तपाईंसँग खाली गर्नको लागि कुनै हिस्ट्री छैन।");
+    return;
+  }
+  if(!confirm("के तपाईं आफ्नो वालेटको सम्पूर्ण कारोबार विवरण (History) डिलिट गर्न निश्चित हुनुहुन्छ?")){
+    return;
+  }
+  db.ref("history/" + currentUid).remove().then(()=>{
+    onlineHistory = [];
+    updateHistory();
+    alert("🧹 तपाईंको वालेट हिस्ट्री सफलतापूर्वक डिलिट भयो!");
+  });
+}
+
+function updateRegistrationList(){
+  const list = document.getElementById("registrationList");
+  if(!list) return;
+  const data = onlineRegistrations[currentUid] || [];
+  list.innerHTML = "";
+  if(!data.length){
+    list.innerHTML = `<div class="empty">तपाईंले कुनै टुर्नामेन्ट जोइन गर्नुभएको छैन</div>`; return;
+  }
+  data.slice().reverse().forEach((r)=>{
+    const t = onlineTournaments.find(x=>Number(x.id)===Number(r.tournamentId));
+    const div = document.createElement("div");
+    div.className = "registration-card";
+    const feeText = Number(r.entryFee) === 0 ? "<b style='color:#4ade80'>FREE (रु ०)</b>" : `<b>रु ${Number(r.entryFee)}</b>`;
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>🎮 ${escapeHTML(r.tournament)}</h3>
+        <button class="clear-hist-btn" onclick="deleteSingleMatchHistory('${r.id}')">🗑️ Delete History</button>
+      </div>
+      <div class="info" style="margin-top:6px">
+        👤 IGN: <b>${escapeHTML(r.playerName)}</b> | 🆔 UID: <b>${escapeHTML(r.gameId)}</b><br>
+        💰 Fee: ${feeText} | 📅 ${escapeHTML(r.date)}
+      </div>
+      <div class="room-details-box">
+        <h4>🔑 Custom Room Credentials</h4>
+        <p><b>Room ID:</b> ${escapeHTML(t && t.roomId ? t.roomId : "कम्प्युटर/Host ले पठाउँदैछ...")}</p>
+        <p><b>Password:</b> ${escapeHTML(t && t.roomPass ? t.roomPass : "कम्प्युटर/Host ले पठाउँदैछ...")}</p>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="add-btn" style="flex:1" onclick="openVictoryModal('${r.tournamentId}', '${escapeHTML(r.tournament)}')">🏆 CLAIM VICTORY (२ प्रुफ)</button>
+        <button class="ban-btn" style="flex:1" onclick="openReportModal('${r.tournamentId}', '${escapeHTML(r.tournament)}')">⚠️ REPORT CHEATER</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function deleteSingleMatchHistory(regId){
+  if(!confirm("के यो खेलको रेकर्ड आफ्नो लिस्टबाट हटाउन चाहनुहुन्छ?")){
+    return;
+  }
+  const currentRegs = (onlineRegistrations[currentUid] || []).filter(r => r.id !== regId);
+  db.ref("registrations/" + currentUid).set(currentRegs).then(()=>{
+    onlineRegistrations[currentUid] = currentRegs;
+    updateRegistrationList();
+  });
+}
+
+function clearAllPlayedMatches(){
+  const data = onlineRegistrations[currentUid] || [];
+  if(!data.length){
+    alert("तपाईंसँग डिलिट गर्नको लागि कुनै खेलको लिस्ट छैन।");
+    return;
+  }
+  if(!confirm("के तपाईं आफूले जोइन गरेका सबै पुराना म्याचहरूको लिस्ट सफा गर्न चाहनुहुन्छ?")){
+    return;
+  }
+  db.ref("registrations/" + currentUid).remove().then(()=>{
+    onlineRegistrations[currentUid] = [];
+    updateRegistrationList();
+    alert("🧹 सबै पुराना म्याचहरूको रेकर्ड डिलिट भयो!");
+  });
+}
+
+function openVictoryModal(tournamentId, tournamentName){
+  activeModalTournamentId = tournamentId;
+  activeModalTournamentName = tournamentName;
+  modalVicImg1 = "";
+  modalVicImg2 = "";
+  document.getElementById("vicKills").value = "";
+  document.getElementById("vicImage1Input").value = "";
+  document.getElementById("vicImage2Input").value = "";
+  document.getElementById("vicImg1Preview").style.display = "none";
+  document.getElementById("vicImg2Preview").style.display = "none";
+  document.getElementById("victoryModalOverlay").style.display = "flex";
+}
+
+function closeVictoryModal(){
+  document.getElementById("victoryModalOverlay").style.display = "none";
+}
+
+function previewVicImg(index, e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    if(index === 1){
+      modalVicImg1 = ev.target.result;
+      const img = document.getElementById("vicImg1Preview");
+      img.src = modalVicImg1;
+      img.style.display = "block";
+    } else {
+      modalVicImg2 = ev.target.result;
+      const img = document.getElementById("vicImg2Preview");
+      img.src = modalVicImg2;
+      img.style.display = "block";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitVictoryModal(){
+  const rank = document.getElementById("vicRank").value;
+  const kills = document.getElementById("vicKills").value.trim() || "0";
+
+  if(!modalVicImg1 || !modalVicImg2){
+    alert("❌ कृपया Booyah स्क्रिनसट र Match History स्क्रिनसट (दुवै २ वटा फोटो) छान्नुहोस्!");
+    return;
+  }
+
+  const id = Date.now().toString();
+  db.ref("victories/" + id).set({
+    id: id,
+    uid: currentUid,
+    userEmail: currentEmail,
+    tournamentId: activeModalTournamentId,
+    tournamentName: activeModalTournamentName,
+    rank: rank,
+    kills: kills,
+    proofImage1: modalVicImg1,
+    proofImage2: modalVicImg2,
+    status: "Pending",
+    date: new Date().toLocaleString()
+  }).then(()=>{
+    closeVictoryModal();
+    alert("✅ दुवै प्रमाण पठाइयो! कम्प्युटरले भेरिफाई गरेपछि रकम थपिनेछ।");
+  });
+}
+
+function openReportModal(tournamentId, tournamentName){
+  activeModalTournamentId = tournamentId;
+  activeModalTournamentName = tournamentName;
+  modalReportImg = "";
+  document.getElementById("repIGN").value = "";
+  document.getElementById("repImageInput").value = "";
+  document.getElementById("repImagePreview").style.display = "none";
+  document.getElementById("reportModalOverlay").style.display = "flex";
+}
+
+function closeReportModal(){
+  document.getElementById("reportModalOverlay").style.display = "none";
+}
+
+function previewReportModalImage(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    modalReportImg = ev.target.result;
+    const img = document.getElementById("repImagePreview");
+    img.src = modalReportImg;
+    img.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitReportModal(){
+  const cheaterIGN = document.getElementById("repIGN").value.trim();
+  const reason = document.getElementById("repReason").value;
+
+  if(!cheaterIGN){
+    alert("❌ कृपया चिटिङ गर्ने खेलाडीको IGN वा UID लेख्नुहोस्!");
+    return;
+  }
+  if(!modalReportImg){
+    alert("❌ कृपया प्रमाणको फोटो अपलोड गर्नुहोस्!");
+    return;
+  }
+
+  const id = Date.now().toString();
+  db.ref("reports/" + id).set({
+    id: id,
+    reporterUid: currentUid,
+    reporterEmail: currentEmail,
+    tournamentId: activeModalTournamentId,
+    tournamentName: activeModalTournamentName,
+    cheaterIGN: cheaterIGN,
+    reason: reason,
+    proofImage: modalReportImg,
+    status: "Pending",
+    date: new Date().toLocaleString()
+  }).then(()=>{
+    closeReportModal();
+    alert("🚨 चिटिङ रिपोर्ट प्रमाणसहित पठाइयो!");
+  });
+}
+
+function renderLeaderboard(){
+  const list = document.getElementById("leaderboard");
+  if(!list) return;
+  
+  const usersData = onlineUsers || {};
+  const arr = Object.values(usersData).sort((a,b)=>Number(b.points||0)-Number(a.points||0));
+  list.innerHTML = "";
+  if(!arr.length){
+    list.innerHTML = `<div class="empty">कुनै खेलाडी उपलब्ध छैनन्</div>`;
+    return;
+  }
+  arr.slice(0, 10).forEach((u, idx)=>{
+    const div = document.createElement("div");
+    div.className = "player";
+    div.innerHTML = `
+      <span style="font-weight:bold;width:30px;color:#a855f7">#${idx+1}</span>
+      <div class="player-info"><b>${escapeHTML(u.ign || u.email || 'Player')}</b></div>
+      <span class="points" style="color:#94a3b8">🏆 Player</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function logout(){
+  auth.signOut().then(()=>{
+    document.getElementById("app").style.display="none";
+    document.getElementById("adminLogin").style.display="none";
+    document.getElementById("login").style.display="flex";
+  });
+}
+
+function showAdminResetModal(e){
+  e.preventDefault();
+  document.getElementById("adminLoginSection").style.display="none";
+  document.getElementById("adminResetSection").style.display="block";
+}
+
+function hideAdminResetModal(){
+  document.getElementById("adminResetSection").style.display="none";
+  document.getElementById("adminLoginSection").style.display="block";
+}
+
+function handleAdminPasswordReset(){
+  const emailInput = document.getElementById("adminResetEmailInput").value.trim();
+  if(!emailInput){
+    alert("❌ कृपया आफ्नो कम्प्युटर जिमेल लेख्नुहोस्!");
+    return;
+  }
+
+  if(emailInput === currentAdminEmail){
+    auth.sendPasswordResetEmail(emailInput)
+      .then(() => {
+        alert("📧 कम्प्युटर पासवर्ड रिसेट लिङ्क तपाईंको आधिकारिक जिमेल (" + currentAdminEmail + ") मा सफलतापूर्वक पठाइयो! कृपया आफ्नो जिमेल चेक गर्नुहोस्।");
+        hideAdminResetModal();
+      })
+      .catch(err => {
+        alert("❌ रिसेट लिङ्क पठाउन सकिएन: " + err.message);
+      });
+  } else {
+    alert("❌ यो जिमेल कम्प्युटरको रूपमा दर्ता गरिएको छैन!");
+  }
+}
+
+function backToLogin(){
+  document.getElementById("adminLogin").style.display="none";
+  if(currentUid) document.getElementById("app").style.display="block";
+  else document.getElementById("login").style.display="flex";
+}
+
+function adminLogin(){
+  const emailInput = document.getElementById("adminEmailInput").value.trim();
+  const passwordInput = document.getElementById("adminPassword").value.trim();
+  
+  if(emailInput === currentAdminEmail && passwordInput === currentAdminPass){
+    document.getElementById("adminLogin").style.display="none";
+    document.getElementById("adminDashboard").style.display="block";
+    loadAdmin();
+    onAdminGameSelected();
+  } else {
+    alert("❌ गलत कम्प्युटर जिमेल वा पासवर्ड! केवल आधिकारिक कम्प्युटरले मात्र लगइन गर्न सक्नुहुन्छ।");
+  }
+}
+
+function adminLogout(){
+  document.getElementById("adminDashboard").style.display="none";
+  document.getElementById("login").style.display="flex";
+}
+
+function changeAdminPassword(){
+  const newPass = document.getElementById("newAdminPasswordInput").value.trim();
+  if(!newPass || newPass.length < 4){
+    alert("❌ पासवर्ड कम्तिमा ४ अक्षर वा अङ्कको हुनुपर्छ!");
+    return;
+  }
+  
+  db.ref("adminSettings/password").set(newPass).then(()=>{
+    currentAdminPass = newPass;
+    alert("✅ कम्प्युटर Password परिवर्तन भयो!");
+    document.getElementById("newAdminPasswordInput").value = "";
+  }).catch(err=>{
+    alert("❌ सेभ गर्न सकिएन: " + err.message);
+  });
+}
+
+function selectAdminVs(format, defaultSlots, el){
+  adminSelectedVsFormat = format;
+  document.querySelectorAll("#adminVsPills .vs-btn").forEach(p => p.classList.remove("active-vs"));
+  el.classList.add("active-vs");
+  document.getElementById("newSlots").value = defaultSlots;
+}
+
+function onAdminModeChanged(){
+  handleAdminFeeInput();
+}
+
+function handleAdminFeeInput(){
+  const mode = document.getElementById("newModeSelect").value;
+  const fee = Number(document.getElementById("newFee").value || 0);
+  const prizeInput = document.getElementById("newPrize");
+
+  // CS Mode मा दोब्बर प्राइज स्वतः राख्ने (₹५ को १०, ₹१० को २०)
+  if(mode === "CS"){
+    if(fee > 0){
+      prizeInput.value = fee * 2;
+    } else {
+      prizeInput.value = ""; // फ्रि भए एडमिनले आफैँ प्राइज लेख्न पाउने
+    }
+  }
+}
+
+function onAdminGameSelected(){
+  const gameCat = document.getElementById("newGameSelect").value;
+  const container = document.getElementById("adminGunPills");
+  if(!container) return;
+  container.innerHTML = "";
+  currentlySelectedGuns = ["ALL GUNS"];
+
+  const gunList = GAME_GUN_COLLECTION[gameCat] || GAME_GUN_COLLECTION["Free Fire"];
+  gunList.forEach(gun => {
+    const pill = document.createElement("span");
+    pill.className = "gun-pill" + (gun === "ALL GUNS" ? " selected" : "");
+    pill.innerText = gun;
+    pill.onclick = () => toggleGunPill(gun, pill);
+    container.appendChild(pill);
+  });
+}
+
+function toggleGunPill(gun, el){
+  if(gun === "ALL GUNS"){
+    currentlySelectedGuns = ["ALL GUNS"];
+    document.querySelectorAll("#adminGunPills .gun-pill").forEach(p => p.classList.remove("selected"));
+    el.classList.add("selected");
+    return;
+  }
+
+  currentlySelectedGuns = currentlySelectedGuns.filter(g => g !== "ALL GUNS");
+  const allGunsPill = Array.from(document.querySelectorAll("#adminGunPills .gun-pill")).find(p => p.innerText === "ALL GUNS");
+  if(allGunsPill) allGunsPill.classList.remove("selected");
+
+  if(currentlySelectedGuns.includes(gun)){
+    currentlySelectedGuns = currentlySelectedGuns.filter(g => g !== gun);
+    el.classList.remove("selected");
+    if(!currentlySelectedGuns.length && allGunsPill){
+      currentlySelectedGuns = ["ALL GUNS"];
+      allGunsPill.classList.add("selected");
+    }
+  } else {
+    currentlySelectedGuns.push(gun);
+    el.classList.add("selected");
+  }
+}
+
+function loadAdmin(){
+  document.getElementById("adminTournamentCount").innerText = onlineTournaments.length;
+  
+  const pendingDeps = onlineDeposits.filter(d=>d.status==="Pending").length;
+  const pendingVics = onlineVictories.filter(v=>v.status==="Pending").length;
+  const pendingReps = onlineReports.filter(r=>r.status==="Pending").length;
+
+  document.getElementById("adminPendingCount").innerText = pendingDeps;
+  document.getElementById("adminVictoriesCount").innerText = pendingVics;
+  document.getElementById("depBadge").innerText = pendingDeps;
+  document.getElementById("vicBadge").innerText = pendingVics;
+  document.getElementById("repBadge").innerText = pendingReps;
+
+  db.ref("users").once("value", snap => {
+    const freshUsers = snap.val() || {};
+    onlineUsers = freshUsers;
+    
+    displayAdminOnlinePlayers();
+    displayAdminOfflinePlayers();
+    displayAdminArchivedPlayers();
+    displayAdminBannedPlayers();
+  });
+
+  displayAdminQrRequests();
+  displayAdminVictories();
+  displayAdminReports();
+  displayAdminWithdrawals();
+  displayAdminDeposits();
+  displayAdminTournaments();
+}
+
+function displayAdminQrRequests(){
+  const list = document.getElementById("adminQrRequestsList");
+  if(!list) return;
+  list.innerHTML = "";
+  const pendingRequests = onlineQrRequests.filter(r => r.status === "Pending");
+  const reqBadgeEl = document.getElementById("qrReqBadge");
+  if(reqBadgeEl) reqBadgeEl.innerText = pendingRequests.length;
+
+  if(!pendingRequests.length){
+    list.innerHTML = `<div class="empty">कुनै खेलाडीले QR मागेका छैनन्</div>`; return;
+  }
+
+  pendingRequests.forEach(r => {
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.innerHTML = `
+      <h3 style="color:#eab308">🔔 QR Request from: ${escapeHTML(r.userEmail)}</h3>
+      <div class="info">
+        💰 माग्नुभएको रकम: <b style="color:#4ade80;font-size:16px">रु ${Number(r.amount)}</b><br>
+        🕒 समय: <small style="color:#94a3b8">${escapeHTML(r.requestedAt)}</small>
+      </div>
+      <div style="background:#111629;padding:10px;border-radius:10px;margin:10px 0">
+        <label style="font-size:12px;color:#38bdf8;font-weight:bold;display:block">यो खेलाडीलाई मात्र पठाउने QR कोड छान्नुहोस्:</label>
+        <input type="file" accept="image/*" id="adminFile_${r.uid}" style="margin-top:6px">
+        <button class="add-btn" onclick="sendIndividualQrToUser('${r.uid}', ${r.amount})">📤 SEND QR TO THIS USER ONLY</button>
+      </div>
+      <button class="del-btn" onclick="adminDeleteQrRequest('${r.uid}')" style="background:#b91c1c;margin-top:6px;">🗑️ DELETE QR REQUEST</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function adminDeleteQrRequest(uid){
+  if(!confirm("के यो QR अनुरोधलाई एडमिनले डिलिट गर्ने हो?")) return;
+  db.ref("qrRequests/" + uid).remove().then(()=>{
+    alert("🗑️ QR अनुरोध हटाइयो!");
+    loadAdmin();
+  });
+}
+
+function sendIndividualQrToUser(uid, amount){
+  const fileInput = document.getElementById("adminFile_" + uid);
+  const file = fileInput.files[0];
+  if(!file){
+    alert("कृपया QR कोडको फोटो छान्नुहोस्!");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const qrBase64 = ev.target.result;
+    db.ref("qrRequests/" + uid).update({
+      status: "Sent",
+      qrImage: qrBase64,
+      sentAt: new Date().toLocaleString()
+    }).then(()=>{
+      alert(`✅ खेलाडीलाई रु ${amount} को QR सफलतापूर्वक पठाइयो!`);
+      loadAdmin();
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+// 📢 Broadcast Message Functions for Admin
+function sendBroadcastMessage(){
+  const txt = document.getElementById("adminBroadcastInput").value.trim();
+  if(!txt){
+    alert("कृपया पठाउने सूचना वा मेसेज लेख्नुहोस्!");
+    return;
+  }
+
+  db.ref("broadcastNotice").set({
+    text: txt,
+    time: new Date().toLocaleString()
+  }).then(()=>{
+    alert("🚀 सूचना सफलतापूर्वक सबै युजरहरूलाई पठाइयो!");
+    document.getElementById("adminBroadcastInput").value = "";
+  });
+}
+
+function clearBroadcastMessage(){
+  if(!confirm("के यो सूचना हटाउन चाहनुहुन्छ?")) return;
+  db.ref("broadcastNotice").remove().then(()=>{
+    alert("🗑️ सूचना हटाइयो र युजरहरूको होमपेजबाट गायब भयो!");
+  });
+}
+
+function displayAdminVictories(){
+  const list = document.getElementById("adminVictoryList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!onlineVictories.length){
+    list.innerHTML = `<div class="empty">कुनै जीतको दाबी आएको छैन</div>`; return;
+  }
+  onlineVictories.slice().reverse().forEach(v=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    let actionBtn = "";
+    if(v.status === "Pending"){
+      actionBtn = `
+        <button class="add-btn" onclick="rewardWinner('${v.id}', '${v.uid}')">🎁 APPROVE & GIVE PRIZE</button>
+        <button class="deduct-btn" onclick="rejectVictory('${v.id}')">❌ REJECT PROOF</button>
+      `;
+    } else {
+      actionBtn = `<b class="${v.status.toLowerCase()}">${v.status}</b>`;
+    }
+
+    const img1 = v.proofImage1 || v.proofImage;
+    const img2 = v.proofImage2;
+
+    let imagesHTML = `
+      <div class="preview-row">
+        <div>
+          <small style="color:#4ade80">१. Booyah Screen:</small>
+          <a href="${img1}" target="_blank"><img src="${img1}" class="payment-preview"></a>
+        </div>
+        ${img2 ? `
+        <div>
+          <small style="color:#38bdf8">२. Match History Screen:</small>
+          <a href="${img2}" target="_blank"><img src="${img2}" class="payment-preview"></a>
+        </div>` : ''}
+      </div>
+    `;
+
+    div.innerHTML = `
+      <h3>🏆 Tournament: ${escapeHTML(v.tournamentName)}</h3>
+      <div class="info">
+        👤 दाबीकर्ता: <b>${escapeHTML(v.userEmail)}</b><br>
+        🎖️ Rank: <b style="color:#4ade80">${escapeHTML(v.rank)}</b> | 🎯 Kills: <b>${escapeHTML(v.kills || 0)}</b><br>
+        📅 मिति: ${escapeHTML(v.date)}
+      </div>
+      ${imagesHTML}
+      <div style="margin-top:10px">
+        ${actionBtn}
+        <button class="del-btn" onclick="deleteVictoryProof('${v.id}')">🗑️ DELETE</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function rewardWinner(id, uid){
+  const prizeAmt = Number(prompt("विजेतालाई कति पुरस्कार (रु) दिने?"));
+  if(!prizeAmt || prizeAmt <= 0) return;
+
+  const curBal = Number((onlineUsers[uid] && onlineUsers[uid].points) || 0);
+  db.ref("users/" + uid + "/points").set(curBal + prizeAmt);
+  db.ref("victories/" + id + "/status").set("Rewarded (रु " + prizeAmt + ")");
+  addHistory(uid, prizeAmt, "Tournament Prize Won 🏆");
+
+  alert(`🎉 रु ${prizeAmt} विजेताको खातामा थपियो!`);
+  loadAdmin();
+}
+
+function rejectVictory(id){
+  if(!confirm("प्रमाण अस्वीकार गर्ने?")) return;
+  db.ref("victories/" + id + "/status").set("Rejected");
+  alert("❌ जीतको प्रमाण अस्वीकार गरियो!");
+  loadAdmin();
+}
+
+function deleteVictoryProof(id){
+  if(!confirm("के यो प्रुफ रेकर्ड डिलिट गर्न चाहनुहुन्छ?")) return;
+  db.ref("victories/" + id).remove().then(()=>{
+    alert("🗑️ डिलिट भयो!");
+    loadAdmin();
+  });
+}
+
+function displayAdminReports(){
+  const list = document.getElementById("adminReportList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!onlineReports.length){
+    list.innerHTML = `<div class="empty">कुनै चिटिङ रिपोर्ट छैन</div>`; return;
+  }
+  onlineReports.slice().reverse().forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.style.borderColor = "#ef4444";
+    div.innerHTML = `
+      <h3 style="color:#ef4444">⚠️ Cheater Reported: ${escapeHTML(r.cheaterIGN)}</h3>
+      <div class="info">
+        🎮 Game: <b>${escapeHTML(r.tournamentName)}</b><br>
+        🚨 कारण/नियम: <b style="color:#f87171">${escapeHTML(r.reason)}</b><br>
+        👤 रिपोर्टर: <small>${escapeHTML(r.reporterEmail)}</small> | 📅 ${escapeHTML(r.date)}
+      </div>
+      <a href="${r.proofImage}" target="_blank">
+        <img src="${r.proofImage}" class="payment-preview">
+      </a>
+      <div style="margin-top:10px">
+        <button class="ban-btn" onclick="banReportedCheater('${escapeHTML(r.cheaterIGN)}')">🚫 BAN CHEATER</button>
+        <button class="del-btn" onclick="deleteReport('${r.id}')">🗑️ DELETE REPORT</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function banReportedCheater(cheaterIGN){
+  const user = Object.values(onlineUsers).find(u => (u.ign && u.ign.toLowerCase() === cheaterIGN.toLowerCase()) || (u.email && u.email.toLowerCase().includes(cheaterIGN.toLowerCase())));
+  if(user){
+    banPlayer(user.uid);
+  } else {
+    alert(`सूचना: '${cheaterIGN}' नाम गरेको खेलाडी सिधै भेटिएन।`);
+  }
+}
+
+function deleteReport(id){
+  if(!confirm("के यो चिटिङ रिपोर्ट डिलिट गर्न चाहनुहुन्छ?")) return;
+  db.ref("reports/" + id).remove().then(()=>{
+    alert("🗑️ रिपोर्ट डिलिट भयो!");
+    loadAdmin();
+  });
+}
+
+function displayAdminOnlinePlayers(){
+  const list = document.getElementById("adminOnlinePlayerList");
+  if(!list) return;
+  list.innerHTML = "";
+  
+  const allUsersArr = Object.values(onlineUsers);
+  const activeUsers = allUsersArr.filter(u => u.status !== "banned" && u.status !== "archived");
+
+  document.getElementById("adminTotalRegisteredPlayers").innerText = allUsersArr.length;
+  document.getElementById("onlinePlayerBadge").innerText = activeUsers.length;
+
+  if(!activeUsers.length){
+    list.innerHTML = `<div class="empty">कुनै खेलाडी छैनन्</div>`;
+    return;
+  }
+
+  activeUsers.forEach((u, index)=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.innerHTML = `
+      <h3>${index + 1}. 🟢 ${escapeHTML(u.email || u.uid)} <b style="color:#4ade80">● Active</b></h3>
+      <div class="info">
+        IGN: <b>${escapeHTML(u.ign||'N/A')}</b> | UID: <b>${escapeHTML(u.gameUid||'N/A')}</b> | ब्यालेन्स: <b style="color:#4ade80">रु ${Number(u.points||0)}</b><br>
+        🕒 Last Seen: <small style="color:#94a3b8">${escapeHTML(u.lastActive || "Recently")}</small>
+      </div>
+      <button class="add-btn" onclick="directBalance('${u.uid}', 1)">➕ रु थप्नुहोस्</button>
+      <button class="deduct-btn" onclick="directBalance('${u.uid}', -1)">➖ रु घटाउनुहोस्</button>
+      <button class="ban-btn" onclick="banPlayer('${u.uid}')">🚫 BAN</button>
+      <button class="del-btn" onclick="archivePlayer('${u.uid}')" style="background:#eab308;color:#111">📁 HIDE / REMOVE</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function displayAdminOfflinePlayers(){
+  const list = document.getElementById("adminOfflinePlayerList");
+  if(!list) return;
+  list.innerHTML = "";
+  
+  const allUsersArr = Object.values(onlineUsers);
+  const offlineUsers = allUsersArr.filter(u => u.status === "offline");
+
+  document.getElementById("offlinePlayerBadge").innerText = offlineUsers.length;
+
+  if(!offlineUsers.length){
+    list.innerHTML = `<div class="empty">कुनै अफलाइन खेलाडी छैनन्</div>`;
+    return;
+  }
+
+  offlineUsers.forEach((u, index)=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.innerHTML = `
+      <h3>${index + 1}. ⚪ ${escapeHTML(u.email || u.uid)} <b style="color:#f87171">○ Offline</b></h3>
+      <div class="info">
+        IGN: <b>${escapeHTML(u.ign||'N/A')}</b> | UID: <b>${escapeHTML(u.gameUid||'N/A')}</b> | ब्यालेन्स: <b style="color:#4ade80">रु ${Number(u.points||0)}</b><br>
+        🕒 Last Seen: <small style="color:#94a3b8">${escapeHTML(u.lastActive || "Long ago")}</small>
+      </div>
+      <button class="add-btn" onclick="directBalance('${u.uid}', 1)">➕ रु थप्नुहोस्</button>
+      <button class="deduct-btn" onclick="directBalance('${u.uid}', -1)">➖ रु घटाउनुहोस्</button>
+      <button class="ban-btn" onclick="banPlayer('${u.uid}')">🚫 BAN</button>
+      <button class="del-btn" onclick="archivePlayer('${u.uid}')" style="background:#eab308;color:#111">📁 HIDE / REMOVE</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function displayAdminArchivedPlayers(){
+  const list = document.getElementById("adminArchivedPlayerList");
+  if(!list) return;
+  list.innerHTML = "";
+  const archivedPlayers = Object.values(onlineUsers).filter(u => u.status === "archived");
+
+  document.getElementById("archivedPlayerBadge").innerText = archivedPlayers.length;
+
+  if(!archivedPlayers.length){
+    list.innerHTML = `<div class="empty">कुनै लुकाइएको (Hidden) खेलाडी छैन</div>`; return;
+  }
+
+  archivedPlayers.forEach((u, index)=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.style.borderColor = "#eab308";
+    div.innerHTML = `
+      <h3>${index + 1}. 📁 ${escapeHTML(u.email || u.uid)} <b style="color:#eab308">(Hidden)</b></h3>
+      <div class="info">
+        IGN: <b>${escapeHTML(u.ign||'N/A')}</b> | UID: <b>${escapeHTML(u.gameUid||'N/A')}</b> | ब्यालेन्स: रु ${Number(u.points||0)}<br>
+      </div>
+      <button class="add-btn" onclick="recoverPlayer('${u.uid}')">♻️ RECOVER PLAYER</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function archivePlayer(uid){
+  if(!confirm("के यो खेलाडीलाई लिस्टबाट हटाउन (Hide गर्न) चाहनुहुन्छ? (एकाउन्ट डिलिट हुँदैन, रिकभर गर्न मिल्छ)")) return;
+  db.ref("users/" + uid + "/status").set("archived").then(()=>{
+    alert("📁 खेलाडीलाई लिस्टबाट हटाइयो! 'Hidden / Removed Players' मा गएर रिकभर गर्न सक्नुहुन्छ।");
+    loadAdmin();
+  });
+}
+
+function recoverPlayer(uid){
+  if(!confirm("के यो खेलाडीलाई फेरि सक्रिय (Recover) गर्न चाहनुहुन्छ?")) return;
+  db.ref("users/" + uid + "/status").set("active").then(()=>{
+    alert("♻️ खेलाडी सफलतापूर्वक रिकभर भयो!");
+    loadAdmin();
+  });
+}
+
+function recoverAllPlayers(){
+  if(!confirm("के तपाईंले हटाएका सम्पूर्ण खेलाडीहरूलाई एकैचोटि रिकभर (फिर्ता) गर्न चाहनुहुन्छ?")) return;
+  
+  const updates = {};
+  Object.values(onlineUsers).forEach(u => {
+    if(u.status === "archived"){
+      updates["users/" + u.uid + "/status"] = "active";
+    }
+  });
+
+  db.ref().update(updates).then(()=>{
+    alert("♻️ सबै खेलाडीहरू सफलतापूर्वक रिकभर भए!");
+    loadAdmin();
+  });
+}
+
+function banPlayer(uid){
+  if(!confirm("के यो खेलाडीलाई BAN गर्न निश्चित हुनुहुन्छ?")) return;
+  db.ref("users/" + uid).update({
+    status: "banned",
+    bannedAt: new Date().toLocaleString()
+  }).then(()=>{
+    alert("🚫 खेलाडी ब्यान भयो!");
+    loadAdmin();
+  });
+}
+
+function unbanPlayer(uid){
+  if(!confirm("के यो खेलाडीलाई Unban गर्न चाहनुहुन्छ?")) return;
+  db.ref("users/" + uid).update({
+    status: "active"
+  }).then(()=>{
+    alert("✅ खेलाडी Unban भयो!");
+    loadAdmin();
+  });
+}
+
+function displayAdminBannedPlayers(){
+  const list = document.getElementById("adminBannedList");
+  if(!list) return;
+  list.innerHTML = "";
+  const bannedPlayers = Object.values(onlineUsers).filter(u => u.status === "banned");
+
+  if(!bannedPlayers.length){
+    list.innerHTML = `<div class="empty">कुनै खेलाडी ब्यान गरिएको छैन</div>`; return;
+  }
+
+  bannedPlayers.forEach((u, index)=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    div.style.borderColor = "#ef4444";
+    div.innerHTML = `
+      <h3>${index + 1}. 🚫 ${escapeHTML(u.email || u.uid)}</h3>
+      <div class="info">
+        IGN: <b>${escapeHTML(u.ign||'N/A')}</b> | बाँकी ब्यालेन्स: रु ${Number(u.points||0)}<br>
+        📅 ब्यान मिति: <small style="color:#fca5a5">${escapeHTML(u.bannedAt || "N/A")}</small>
+      </div>
+      <button class="add-btn" onclick="unbanPlayer('${u.uid}')">✅ UNBAN</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function displayAdminWithdrawals(){
+  const list = document.getElementById("adminWithdrawList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!onlineWithdrawals.length){
+    list.innerHTML = `<div class="empty">कुनै विथड्रल अनुरोध छैन</div>`; return;
+  }
+  onlineWithdrawals.slice().reverse().forEach(w=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    let actionBtn = "";
+    if(w.status === "Pending"){
+      actionBtn = `
+        <button class="add-btn" onclick="approveWithdraw('${w.id}')">✅ PAID</button>
+        <button class="deduct-btn" onclick="rejectWithdraw('${w.id}')">❌ REJECT & REFUND</button>
+      `;
+    } else {
+      actionBtn = `<b class="${w.status.toLowerCase()}">${w.status}</b>`;
+    }
+
+    div.innerHTML = `
+      <h3>👤 Player: ${escapeHTML(w.userEmail)}</h3>
+      <div class="info">
+        💸 भुक्तानी रकम: <b style="color:#ef4444;font-size:16px">रु ${Number(w.amount)}</b><br>
+        🏦 माध्यम: <b>${escapeHTML(w.method)}</b> | 🆔 खाता: <b>${escapeHTML(w.account)}</b>
+      </div>
+      <div style="margin-top:10px">
+        ${actionBtn}
+        <button class="del-btn" onclick="deleteWithdrawal('${w.id}')">🗑️ DELETE</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function approveWithdraw(id){
+  const w = onlineWithdrawals.find(x=>String(x.id)===String(id));
+  if(!w || w.status !== "Pending") return;
+  if(!confirm(`के तपाईंले ${w.userEmail} लाई रु ${w.amount} पठाइसक्नुभयो?`)) return;
+
+  db.ref("withdrawals/" + id + "/status").set("Approved");
+  alert("✅ विथड्रल सम्पन्न भयो!");
+  loadAdmin();
+}
+
+function rejectWithdraw(id){
+  const w = onlineWithdrawals.find(x=>String(x.id)===String(id));
+  if(!w || w.status !== "Pending") return;
+  if(!confirm("विथड्रल अस्वीकार गरी रकम फिर्ता दिने?")) return;
+
+  db.ref("withdrawals/" + id + "/status").set("Rejected");
+  const curBal = Number((onlineUsers[w.uid] && onlineUsers[uid].points) || 0);
+  db.ref("users/" + w.uid + "/points").set(curBal + Number(w.amount));
+  addHistory(w.uid, w.amount, "Refund - Rejected Withdrawal");
+  alert("❌ रकम फिर्ता भयो!");
+  loadAdmin();
+}
+
+function deleteWithdrawal(id){
+  if(!confirm("विथड्रल रेकर्ड डिलिट गर्ने?")) return;
+  db.ref("withdrawals/" + id).remove().then(()=>{
+    alert("🗑️ डिलिट भयो!");
+    loadAdmin();
+  });
+}
+
+function displayAdminDeposits(){
+  const list = document.getElementById("adminDepositList");
+  if(!list) return;
+  list.innerHTML = "";
+  if(!onlineDeposits.length){
+    list.innerHTML = `<div class="empty">कुनै डिपोजिट छैन</div>`; return;
+  }
+  onlineDeposits.slice().reverse().forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "admin-player";
+    let actionBtn = "";
+    if(d.status === "Pending"){
+      actionBtn = `
+        <button class="add-btn" onclick="approveDepositManually('${d.id}', '${d.uid}', ${d.amount})">✅ APPROVE & ADD BALANCE (हातले थप्ने)</button>
+        <button class="deduct-btn" onclick="rejectDeposit('${d.id}')">❌ REJECT</button>
+      `;
+    } else {
+      actionBtn = `<b class="${d.status.toLowerCase()}">${d.status}</b>`;
+    }
+
+    div.innerHTML = `
+      <h3>👤 Player: ${escapeHTML(d.userEmail)}</h3>
+      <div class="info">
+        💰 पठाइएको दाबी रकम: <b style="color:#4ade80;font-size:16px">रु ${Number(d.amount)}</b><br>
+        🆔 Txn: ${escapeHTML(d.txn)} | 📅 ${escapeHTML(d.date)}
+      </div>
+      <a href="${d.image}" target="_blank">
+        <img src="${d.image}" class="payment-preview">
+      </a>
+      <div style="margin-top:10px">
+        ${actionBtn}
+        <button class="del-btn" onclick="deleteDepositProof('${d.id}')">🗑️ DELETE PROOF</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function approveDepositManually(id, uid, defaultAmt){
+  const userEnteredAmt = prompt(`युजरको खातामा कति रुपैयाँ जम्मा गर्ने हो रकम लेख्नुहोस्:`, defaultAmt);
+  if(userEnteredAmt === null) return;
+  const addAmt = Number(userEnteredAmt);
+
+  if(!addAmt || addAmt <= 0){
+    alert("❌ कृपया सही रकम लेख्नुहोस्!");
+    return;
+  }
+
+  const curBal = Number((onlineUsers[uid] && onlineUsers[uid].points) || 0);
+  db.ref("users/" + uid + "/points").set(curBal + addAmt);
+  db.ref("deposits/" + id + "/status").set("Approved (रु " + addAmt + ")");
+  db.ref("qrRequests/" + uid).remove();
+
+  addHistory(uid, addAmt, "Payment Approved & Added Manually");
+
+  alert(`✅ सफलतापूर्वक खेलाडीको खातामा रु ${addAmt} थपियो र QR कोड रिसेट भयो!`);
+  loadAdmin();
+}
+
+function rejectDeposit(id){
+  const d = onlineDeposits.find(x=>String(x.id)===String(id));
+  if(!d || d.status !== "Pending") return;
+  if(!confirm("पेमेन्ट अस्वीकार गर्ने?")) return;
+
+  db.ref("deposits/" + id + "/status").set("Rejected");
+  db.ref("qrRequests/" + d.uid).remove();
+
+  alert("❌ पेमेन्ट अस्वीकार गरियो र युजरको QR हटाइयो!");
+  loadAdmin();
+}
+
+function deleteDepositProof(id){
+  if(!confirm("पेमेन्ट फोटो डिलिट गर्ने?")) return;
+  db.ref("deposits/" + id).remove().then(()=>{
+    alert("🗑️ पेमेन्ट फोटो हटाइयो!");
+    loadAdmin();
+  });
+}
+
+function displayAdminTournaments(){
+  const csList = document.getElementById("adminCsTournamentList");
+  const brList = document.getElementById("adminBrTournamentList");
+  if(!csList || !brList) return;
+  csList.innerHTML = "";
+  brList.innerHTML = "";
+
+  const csTournaments = onlineTournaments.filter(t => t.gameMode === "CS");
+  const brTournaments = onlineTournaments.filter(t => t.gameMode === "BR");
+
+  if(!csTournaments.length){
+    csList.innerHTML = `<div class="empty">कुनै CS टुर्नामेन्ट छैन</div>`;
+  } else {
+    csTournaments.forEach(t => csList.appendChild(createAdminTournamentCard(t)));
+  }
+
+  if(!brTournaments.length){
+    brList.innerHTML = `<div class="empty">कुनै BR टुर्नामेन्ट छैन</div>`;
+  } else {
+    brTournaments.forEach(t => brList.appendChild(createAdminTournamentCard(t)));
+  }
+}
+
+function createAdminTournamentCard(t){
+  const div = document.createElement("div");
+  div.className = "admin-player";
+  const statusBadge = t.status === "Open" ? '<b style="color:#4ade80">● OPEN</b>' : '<b style="color:#f87171">● CLOSED</b>';
+  const feeText = Number(t.fee || 0) === 0 ? "<b style='color:#4ade80'>FREE (रु ०)</b>" : `रु ${Number(t.fee)}`;
+  
+  div.innerHTML = `
+    <h3>🎮 ${escapeHTML(t.game)} | ${statusBadge}</h3>
+    <div class="info">
+      🎯 Game: <b>${escapeHTML(t.gameCategory || 'General')}</b> | ⚔️ Format: <b style="color:#34d399">${escapeHTML(t.vsFormat || 'Custom')}</b><br>
+      🛡️ Wall: <b>${escapeHTML(t.ruleWall || 'Unlimited')}</b> | 🎯 Shot: <b>${escapeHTML(t.ruleHeadshot || 'Normal')}</b><br>
+      🔫 Guns: <b>${escapeHTML(t.allowedGuns || 'ALL GUNS')}</b><br>
+      📅 ${escapeHTML(t.date)} | ⏰ ${escapeHTML(t.time)}<br>
+      💰 Entry: ${feeText} | 🏆 Prize: <b style="color:#eab308">रु ${Number(t.prize)}</b>
+    </div>
+    <div style="background:#111629;padding:10px;border-radius:10px;margin-top:8px">
+      <input type="text" id="adminRoomId_${t.id}" value="${escapeHTML(t.roomId||'')}" placeholder="Room ID">
+      <input type="text" id="adminRoomPass_${t.id}" value="${escapeHTML(t.roomPass||'')}" placeholder="Password">
+      <button class="add-btn" style="width:100%" onclick="saveRoomDetails('${t.id}')">💾 SAVE & NOTIFY PLAYERS</button>
+    </div>
+    <div style="margin-top:8px; display:flex; gap:6px;">
+      <button class="add-btn" style="flex:1;background:#2563eb;" onclick="toggleTournamentStatus('${t.id}', '${t.status}')">🔄 STATUS: ${t.status === 'Open' ? 'CLOSE' : 'OPEN'}</button>
+      <button class="btn-red" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:bold;font-size:12px;background:#b91c1c;color:#fff;" onclick="deleteTournament('${t.id}')">🗑️ DELETE GAME</button>
+    </div>
+  `;
+  return div;
+}
+
+function toggleTournamentStatus(id, currentStatus){
+  const newStatus = currentStatus === "Open" ? "Closed" : "Open";
+  db.ref("tournaments/" + id + "/status").set(newStatus).then(()=>{
+    alert(`✅ टुर्नामेन्टको स्थिति '${newStatus}' बनाइयो!`);
+    loadAdmin();
+  });
+}
+
+function saveRoomDetails(id){
+  const roomId = document.getElementById("adminRoomId_"+id).value.trim();
+  const roomPass = document.getElementById("adminRoomPass_"+id).value.trim();
+
+  db.ref("tournaments/" + id + "/roomId").set(roomId);
+  db.ref("tournaments/" + id + "/roomPass").set(roomPass);
+
+  alert("✅ Room ID र Password सेभ भयो!");
+  loadAdmin();
+}
+
+function deleteTournament(id){
+  if(!confirm("के यो टुर्नामेन्टलाई सधैंको लागि डिलिट गर्ने निश्चित हुनुहुन्छ?")) return;
+  db.ref("tournaments/" + id).remove().then(()=>{
+    alert("🗑️ टुर्नामेन्ट डिलिट भयो!");
+    loadAdmin();
+  });
+}
+
+function addTournament(){
+  const gameCat = document.getElementById("newGameSelect").value;
+  const gameMode = document.getElementById("newModeSelect").value;
+  const vsFormat = adminSelectedVsFormat || "4v4";
+  const gameTitle = document.getElementById("newGameTitle").value.trim() || `${gameCat} ${vsFormat} (${gameMode === 'CS' ? 'CS Custom' : 'BR'})`;
+  
+  const ruleWall = document.getElementById("newRuleWall").value;
+  const ruleHeadshot = document.getElementById("newRuleHeadshot").value;
+  const ruleSkill = document.getElementById("newRuleSkill").value;
+  const allowedGunsString = currentlySelectedGuns.length ? currentlySelectedGuns.join(", ") : "ALL GUNS";
+
+  const date = document.getElementById("newDate").value.trim();
+  const time = document.getElementById("newTime").value.trim();
+  const fee = Number(document.getElementById("newFee").value || 0); // 0 भए Free Entry
+  let prize = Number(document.getElementById("newPrize").value || 0);
+  const slots = Number(document.getElementById("newSlots").value);
+
+  if(!date || !time || slots <= 0){
+    alert("कृपया मिति, समय र स्लट अनिवार्य भर्नुहोस्!"); 
+    return;
+  }
+
+  // CS Mode मा दोब्बर प्राइज (₹५ को १०, ₹१० को २०)
+  if(gameMode === "CS" && fee > 0){
+    prize = fee * 2;
+  }
+
+  const id = Date.now().toString();
+  db.ref("tournaments/" + id).set({
+    id: id,
+    game: gameTitle,
+    gameCategory: gameCat,
+    gameMode: gameMode,
+    vsFormat: vsFormat,
+    ruleWall: ruleWall,
+    ruleHeadshot: ruleHeadshot,
+    ruleSkill: ruleSkill,
+    allowedGuns: allowedGunsString,
+    date, time, 
+    fee: fee,
+    prize: prize,
+    slots: slots,
+    status: "Open",
+    roomId: "", roomPass: "",
+    hostedByPlayer: false
+  });
+
+  ["newGameTitle","newDate","newTime","newFee","newPrize","newSlots"].forEach(x=>document.getElementById(x).value="");
+  alert(`🎉 टुर्नामेन्ट सफलतापूर्वक थपियो! (Entry: रु ${fee}, Prize: रु ${prize})`);
+  loadAdmin();
+}
+
+function directBalance(uid, mode){
+  const amt = Number(prompt(mode === 1 ? "कति रुपैयाँ थप्ने?" : "कति रुपैयाँ घटाउने?"));
+  if(!amt || amt <= 0) return;
+
+  const cur = Number((onlineUsers[uid] && onlineUsers[uid].points) || 0);
+  if(mode === -1 && cur < amt){alert("अपर्याप्त ब्यालेन्स!"); return;}
+
+  const updated = cur + (amt * mode);
+  db.ref("users/" + uid + "/points").set(updated);
+  addHistory(uid, amt * mode, mode === 1 ? "कम्प्युटर Added" : "कम्प्युटर Deducted");
+  alert("✅ ब्यालेन्स अपडेट भयो!");
+  loadAdmin();
+}
+</script>
 </body>
-        </html>
+</html>
